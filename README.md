@@ -7,7 +7,7 @@ Resources used:
     https://www.hobbytronics.co.uk/arduino-compatable-nano-v4
 
 
-- USBHost v2.4 (preloaded with MIDI Device firmware
+- USBHost v2.4 (preloaded with MIDI Device firmware)
     https://www.hobbytronics.co.uk/usb-host-board-v24
 
 
