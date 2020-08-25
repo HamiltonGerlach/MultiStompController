@@ -17,61 +17,78 @@
 #define BUFFER_LENGTH 16
 
 #define CONTROL_BYTE 0xFF
+#define CONTROL_FLUSH true
 
 
 // CLASSES
-class List {
-public:
-    byte length = 0;
-    byte data[BUFFER_LENGTH];
+class Buffer3 {
+  public:
+    byte Data[3];
     
-    void Append(byte item) {
-      if (length < BUFFER_LENGTH) data[length++] = item;
-    }
-    
-    void Remove(byte index) {
-      if (index >= length) return;
-      memmove(&data[index], &data[index+1], length - index - 1);
-      length--;
-    }
-    
-    byte Get(byte index) {
-      if (index >= length) index = length; // clamp index
-      return data[index];
+    void Push(byte In) {
+      Data[0] = Data[1];
+      Data[1] = Data[2];
+      Data[2] = In;
     }
 
-    byte GetLast() { return data[length]; }
-    
-    byte GetLast(byte index) {
-      byte pos = length - index;
-      if (pos < 0) pos = 0; // clamp index
-      return data[pos];
+    bool CCBank(byte Channel) { 
+      if ((Data[0] == (0xB0 + Channel - 1)) && (Data[1] == 0x00) && (Data[2] == 0x00))
+        return true;
+      else
+        return false;
     }
     
-    void Flush(bool Control) {
-      byte B = Control ? CONTROL_BYTE : 0;
-      for (int i = 0; i < BUFFER_LENGTH; i++) data[i] = B;
-      length = 0;
+    bool CCNorm(byte Channel) { 
+      if ((Data[0] == (0xB0 + Channel - 1)) && (Data[1] <= 0x7F) && (Data[2] <= 0x7F) && (Data[1] > 0x00))
+        return true;
+      else
+        return false;
+    }
+    
+    bool CCTerm(byte Channel) { 
+      if ((Data[0] == (0xB0 + Channel - 1)) && (Data[1] == 0x80) && (Data[2] == 0x80))
+        return true;
+      else
+        return false;
+    }
+    
+    byte PC(byte Channel) {
+      byte Out = CONTROL_BYTE;
+      
+      if (  ((Data[0] == (0xC0 + Channel - 1)) && (Data[1] <= 0x7F)) ||
+            ((Data[1] == (0xC0 + Channel - 1)) && (Data[2] <= 0x7F))   ) {
+          if (Data[0] == (0xC0 + Channel - 1)) {
+            Out = Data[1];
+            Data[0] = CONTROL_BYTE;
+            Data[1] = CONTROL_BYTE;
+          }
+          else {
+            Out = Data[2];
+            Data[1] = CONTROL_BYTE;
+            Data[2] = CONTROL_BYTE;
+          }
+      }
+      
+      return Out;
+    }
+
+    void Flush() {
+      byte B = CONTROL_FLUSH ? CONTROL_BYTE : 0;
+      Data[0] = B; Data[1] = B; Data[2] = B;
     }
 };
 
 
 // GLOBALS
-List Buffer;
+Buffer3 Mem3;
 
 unsigned long TimerStart, TimerCurrent;
 
-byte FlowBuffer[3] = {0, 0, 0}, FlowBufferPos = 0;
-
 byte PN1, PN2, CN1, CV1, CN2, CV2;
-
-bool Receiving, Sending, RxBankCC1, RxBankCC2;
 bool RxNormCC1, RxNormCC2, RxTermCC1, RxTermCC2;
-bool RxPC1, RxPC2, RxActive; // disable RX temporarily after receiving complete message
+bool RxBankCC1, RxBankCC2, RxPC1, RxPC2, RxActive;
 
 AltSoftSerial MIDI_S = AltSoftSerial(MIDI_SERIAL_RX, MIDI_SERIAL_TX);
-
-
 
 
 
@@ -80,6 +97,8 @@ void setup() {
   MIDI_S.setTimeout(MIDI_IN_TIMEOUT);   // MIDI In Timeout
   MIDI_S.begin(MIDI_BAUDRATE);          // MIDI In/Out
 
+  MIDI_S.flush(); Serial.flush();
+  
   #if DEBUG
     Serial.begin(DEBUG_BAUDRATE);         // Debug Out
   #else
@@ -96,48 +115,51 @@ void setup() {
 // MAIN LOOP FUNCTION
 void loop() {
   while ((MIDI_S.available() > 0) && RxActive) {
-    Buffer.Append(MIDI_S.read()); Receiving = true;
-  }
-
-  Sending = CheckBuffer();
-  
-  if (Sending) {
-    #if DEBUG
-      // DEBUG
-    #else
-      MidiOutCC2(0x4A, 0x00);   // Tuner off message
-
-      if (RxNormCC1) OnReceiveCC1(CN1, V1);
-      if (RxPC1)     OnReceivePC1(PN1);
-      
-      if (RxNormCC2) OnReceiveCC2(CN2, V2);
-      if (RxPC2)     OnReceivePC2(PN2);
-    #endif
+    Mem3.Push(MIDI_S.read());
     
-    Sending = false;
+    if (Mem3.CCBank(1)) RxBankCC1 = true;
+    if (Mem3.CCTerm(1)) RxTermCC1 = true;
+    if (Mem3.CCNorm(1)) { RxNormCC1 = true; CN1 = Mem3.Data[1]; CV1 = Mem3.Data[2]; }
+      
+    if (Mem3.CCBank(2)) RxBankCC2 = true;
+    if (Mem3.CCTerm(2)) RxTermCC2 = true;
+    if (Mem3.CCNorm(2)) { RxNormCC2 = true; CN2 = Mem3.Data[1]; CV2 = Mem3.Data[2]; }
+
+    if (!RxPC1)
+    {
+      PN1 = Mem3.PC(1);
+      if (PN1 < CONTROL_BYTE) RxPC1 = true;
+    }
+
+    if (!RxPC2)
+    {
+      PN2 = Mem3.PC(2);
+      if (PN2 < CONTROL_BYTE) RxPC2 = true;
+    }
   }
 
-  TimerCurrent = millis();
-  
-  
-  #if DEBUG
-    if (Receiving) {
-      Serial.println(micros());
-      for (int i = 0; i < Buffer.length; i++)
-        Serial.println(Buffer.Get(i), HEX);
-      Receiving = false;
-    }
-  #endif
+
+  // STATE CHECK & SENDING ROUTINE
+  if (StateMachine()) {
+    MidiOutCC2(0x4A, 0x00);   // Tuner off message
+
+    if (RxNormCC1) OnReceiveCC1(CN1, CV1);
+    if (RxPC1)     OnReceivePC1(PN1);
+    
+    if (RxNormCC2) OnReceiveCC2(CN2, CV2);
+    if (RxPC2)     OnReceivePC2(PN2);
+
+    ResetMessageData();
+    
+    // TODO: start RxActive timer
+    // --> disable RX temporarily after receiving complete message
+  }
   
   
   // TUNER SWITCH HANDLING
+  TimerCurrent = millis();
   if ((digitalRead(SWITCH_TUNER) != HIGH) && (TimerCurrent - TimerStart > SWITCH_DEB)) {
-    #if DEBUG
-      Log(Buffer.GetLast());
-    #else
-      MidiOutCC2(0x4A, 0x7F);   // Tuner on message
-    #endif
-    
+    MidiOutCC2(0x4A, 0x7F);   // Tuner on message
     TimerStart = TimerCurrent;
   }
 
@@ -145,10 +167,12 @@ void loop() {
 
 
 // AUXILIARY FUNCTIONS
-bool CheckBuffer() {
-  
+bool StateMachine() {
+  if ((RxNormCC1 || RxTermCC1) && (RxNormCC2 || RxTermCC2))
+    return true;
+  else
+    return false;
 }
-
 
 void ResetMessageData() {
   PN1 = 0; PN2 = 0;
@@ -164,40 +188,64 @@ void ResetMessageData() {
   RxNormCC2 = false;
   RxTermCC2 = false;
   RxPC2     = false;
-
-  Receiving = false;
-  Sending   = false;
-  
   RxActive  = true;
-
-  Buffer.Flush(false);
+  
+  Mem3.Flush();
 }
 
 
 // SEND EVENTS
 void OnReceivePC1(byte PN) {
+  #if DEBUG
+    Serial.println("");
+    Serial.print("TX: Channel 1 PC ");
+    Serial.println(PN, HEX);
+  #endif
+  
   MidiOutPC1(PN);
 }
 void OnReceivePC2(byte PN) {
+  #if DEBUG
+    Serial.println("");
+    Serial.print("TX: Channel 2 PC ");
+    Serial.println(PN, HEX);
+  #endif
+  
   MidiOutPC2(PN);
 }
 
 void OnReceiveCC1(byte CN, byte CV) {
+  #if DEBUG
+    Serial.println("");
+    Serial.print("TX: Channel 1 CC ");
+    Serial.print(CN, HEX);
+    Serial.print(" ");
+    Serial.println(CV, HEX);
+  #endif
+  
   MidiOutCC1(CN, CV);
 }
 void OnReceiveCC2(byte CN, byte CV) {
+  #if DEBUG
+    Serial.println("");
+    Serial.print("TX: Channel 2 CC ");
+    Serial.print(CN, HEX);
+    Serial.print(" ");
+    Serial.println(CV, HEX);
+  #endif
+  
   MidiOutCC2(CN, CV);
 }
 
 
 // MIDI OUT FUNCTIONS
-void MidiOutPC1(byte pc) {
+void MidiOutPC1(byte pn) {
   MIDI_S.write(0xC0);
-  MIDI_S.write(pc);
+  MIDI_S.write(pn);
 }
-void MidiOutPC2(byte pc) {
+void MidiOutPC2(byte pn) {
   Serial.write(0xC0);
-  Serial.write(pc);
+  Serial.write(pn);
 }
 
 void MidiOutCC1(byte cn, byte cv) {
@@ -213,5 +261,5 @@ void MidiOutCC2(byte cn, byte cv) {
 
 
 // DEBUG FUNCTIONS
-void Log(byte x) { Serial.write(x); }
-void Log(int x)  { Serial.write(x); }
+void Log(byte x)    { Serial.write(x); }
+void Log(int x)     { Serial.write(x); }
