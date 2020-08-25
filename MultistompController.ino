@@ -107,11 +107,11 @@ void loop() {
     #else
       MidiOutCC2(0x4A, 0x00);   // Tuner off message
 
-      if (RxNormCC1) OnSendCC1(CN1, V1);
-      if (RxPC1)     OnSendPC1(PN1);
+      if (RxNormCC1) OnReceiveCC1(CN1, V1);
+      if (RxPC1)     OnReceivePC1(PN1);
       
-      if (RxNormCC2) OnSendCC2(CN2, V2);
-      if (RxPC2)     OnSendPC2(PN2);
+      if (RxNormCC2) OnReceiveCC2(CN2, V2);
+      if (RxPC2)     OnReceivePC2(PN2);
     #endif
     
     Sending = false;
@@ -175,17 +175,17 @@ void ResetMessageData() {
 
 
 // SEND EVENTS
-void OnSendPC1(byte PN) {
+void OnReceivePC1(byte PN) {
   MidiOutPC1(PN);
 }
-void OnSendPC2(byte PN) {
+void OnReceivePC2(byte PN) {
   MidiOutPC2(PN);
 }
 
-void OnSendCC1(byte CN, byte CV) {
+void OnReceiveCC1(byte CN, byte CV) {
   MidiOutCC1(CN, CV);
 }
-void OnSendCC2(byte CN, byte CV) {
+void OnReceiveCC2(byte CN, byte CV) {
   MidiOutCC2(CN, CV);
 }
 
