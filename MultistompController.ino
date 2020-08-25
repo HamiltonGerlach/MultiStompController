@@ -91,23 +91,21 @@ bool RxBankCC1, RxBankCC2, RxPC1, RxPC2, RxActive;
 AltSoftSerial MIDI_S = AltSoftSerial(MIDI_SERIAL_RX, MIDI_SERIAL_TX);
 
 
-
 // MAIN INIT FUNCTION
 void setup() {
   MIDI_S.setTimeout(MIDI_IN_TIMEOUT);   // MIDI In Timeout
   MIDI_S.begin(MIDI_BAUDRATE);          // MIDI In/Out
-
   MIDI_S.flush(); Serial.flush();
   
   #if DEBUG
-    Serial.begin(DEBUG_BAUDRATE);         // Debug Out
+    Serial.begin(DEBUG_BAUDRATE);       // Debug Out
   #else
     Serial.begin(MIDI_BAUDRATE);        // USB Host MIDI Out
   #endif
   
   pinMode(SWITCH_TUNER, INPUT_PULLUP);  // Tuner switch
 
-  ResetMessageData();
+  ResetState();
   TimerStart = millis();
 }
 
@@ -117,22 +115,20 @@ void loop() {
   while ((MIDI_S.available() > 0) && RxActive) {
     Mem3.Push(MIDI_S.read());
     
-    if (Mem3.CCBank(1)) RxBankCC1 = true;
-    if (Mem3.CCTerm(1)) RxTermCC1 = true;
+    if (Mem3.CCBank(1))   RxBankCC1 = true;
+    if (Mem3.CCTerm(1))   RxTermCC1 = true;
     if (Mem3.CCNorm(1)) { RxNormCC1 = true; CN1 = Mem3.Data[1]; CV1 = Mem3.Data[2]; }
       
-    if (Mem3.CCBank(2)) RxBankCC2 = true;
-    if (Mem3.CCTerm(2)) RxTermCC2 = true;
+    if (Mem3.CCBank(2))   RxBankCC2 = true;
+    if (Mem3.CCTerm(2))   RxTermCC2 = true;
     if (Mem3.CCNorm(2)) { RxNormCC2 = true; CN2 = Mem3.Data[1]; CV2 = Mem3.Data[2]; }
 
-    if (!RxPC1)
-    {
+    if (!RxPC1) {
       PN1 = Mem3.PC(1);
       if (PN1 < CONTROL_BYTE) RxPC1 = true;
     }
 
-    if (!RxPC2)
-    {
+    if (!RxPC2) {
       PN2 = Mem3.PC(2);
       if (PN2 < CONTROL_BYTE) RxPC2 = true;
     }
@@ -149,10 +145,10 @@ void loop() {
     if (RxNormCC2) OnReceiveCC2(CN2, CV2);
     if (RxPC2)     OnReceivePC2(PN2);
 
-    ResetMessageData();
+    ResetState();
     
     // TODO: start RxActive timer
-    // --> disable RX temporarily after receiving complete message
+    ///// (disable RX temporarily after receiving complete message)
   }
   
   
@@ -162,7 +158,6 @@ void loop() {
     MidiOutCC2(0x4A, 0x7F);   // Tuner on message
     TimerStart = TimerCurrent;
   }
-
 }
 
 
@@ -174,7 +169,7 @@ bool StateMachine() {
     return false;
 }
 
-void ResetMessageData() {
+void ResetState() {
   PN1 = 0; PN2 = 0;
   CN1 = 0; CN2 = 0;
   CV1 = 0; CV2 = 0;
