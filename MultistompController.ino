@@ -57,21 +57,17 @@ public:
 
 
 // GLOBALS
-unsigned long TimerStart, TimerCurrent;
-
 List Buffer;
 
-byte FlowBuffer[3] = {0, 0, 0};
-byte FlowBufferPos = 0;
+unsigned long TimerStart, TimerCurrent;
+
+byte FlowBuffer[3] = {0, 0, 0}, FlowBufferPos = 0;
 
 byte PN1, PN2, CN1, CV1, CN2, CV2;
 
-bool Receiving = false, Sending   = false;
-bool RxBankCC1 = false, RxBankCC2 = false;
-bool RxNormCC1 = false, RxNormCC2 = false;
-bool RxTermCC1 = false, RxTermCC2 = false;
-bool RxPC1     = false, RxPC2     = false;
-bool RxActive  = true; // disable RX temporarily after receiving complete message
+bool Receiving, Sending, RxBankCC1, RxBankCC2;
+bool RxNormCC1, RxNormCC2, RxTermCC1, RxTermCC2;
+bool RxPC1, RxPC2, RxActive; // disable RX temporarily after receiving complete message
 
 AltSoftSerial MIDI_S = AltSoftSerial(MIDI_SERIAL_RX, MIDI_SERIAL_TX);
 
@@ -91,7 +87,8 @@ void setup() {
   #endif
   
   pinMode(SWITCH_TUNER, INPUT_PULLUP);  // Tuner switch
-  
+
+  ResetMessageData();
   TimerStart = millis();
 }
 
@@ -99,8 +96,7 @@ void setup() {
 // MAIN LOOP FUNCTION
 void loop() {
   while ((MIDI_S.available() > 0) && RxActive) {
-    Buffer.Append(MIDI_S.read());
-    Receiving = true;
+    Buffer.Append(MIDI_S.read()); Receiving = true;
   }
 
   Sending = CheckBuffer();
@@ -111,19 +107,19 @@ void loop() {
     #else
       MidiOutCC2(0x4A, 0x00);   // Tuner off message
 
-      if (RxNormCC1) MidiOutCC1(CN1, CV1);
-      if (RxPC1)     MidiOutPC1(PN1);
+      if (RxNormCC1) OnSendCC1(CN1, V1);
+      if (RxPC1)     OnSendPC1(PN1);
       
-      if (RxNormCC2) MidiOutCC2(CN2, CV2);
-      if (RxPC2)     MidiOutPC1(PN2);
-      
+      if (RxNormCC2) OnSendCC2(CN2, V2);
+      if (RxPC2)     OnSendPC2(PN2);
     #endif
     
     Sending = false;
   }
 
   TimerCurrent = millis();
-
+  
+  
   #if DEBUG
     if (Receiving) {
       Serial.println(micros());
@@ -175,6 +171,22 @@ void ResetMessageData() {
   RxActive  = true;
 
   Buffer.Flush(false);
+}
+
+
+// SEND EVENTS
+void OnSendPC1(byte PN) {
+  MidiOutPC1(PN);
+}
+void OnSendPC2(byte PN) {
+  MidiOutPC2(PN);
+}
+
+void OnSendCC1(byte CN, byte CV) {
+  MidiOutCC1(CN, CV);
+}
+void OnSendCC2(byte CN, byte CV) {
+  MidiOutCC2(CN, CV);
 }
 
 
