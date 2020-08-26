@@ -1,8 +1,9 @@
 ///////////////////////////////////////
-#define DEBUG true     // DEBUG MODE //
-///////////////////////////////////////
+#define DEBUG false
 
 #include <AltSoftSerial.h>
+
+#define ARRAY_SIZE(array) ((sizeof(array))/(sizeof(array[0])))
 
 #define MIDI_SERIAL_RX 12
 #define MIDI_SERIAL_TX 11
@@ -133,7 +134,7 @@ void loop() {
       if (PN2 < CONTROL_BYTE) RxPC2 = true;
     }
   }
-
+  
 
   // STATE CHECK & SENDING ROUTINE
   if (StateMachine()) {
@@ -146,16 +147,19 @@ void loop() {
     if (RxPC2)     OnReceivePC2(PN2);
 
     ResetState();
-    
     // TODO: start RxActive timer
-    ///// (disable RX temporarily after receiving complete message)
   }
   
   
   // TUNER SWITCH HANDLING
   TimerCurrent = millis();
   if ((digitalRead(SWITCH_TUNER) != HIGH) && (TimerCurrent - TimerStart > SWITCH_DEB)) {
-    MidiOutCC2(0x4A, 0x7F);   // Tuner on message
+    //MidiOutCC2(0x4A, 0x7F);   // Tuner on message
+
+    ZoomParamEnable();
+    ZoomSwitchOn(1);
+    ZoomParamDisable();
+    
     TimerStart = TimerCurrent;
   }
 }
@@ -196,8 +200,11 @@ void OnReceivePC1(byte PN) {
     Serial.print("TX: Channel 1 PC ");
     Serial.println(PN, HEX);
   #endif
-  
-  MidiOutPC1(PN);
+
+  if (PN < 50) MidiOutPC1(PN);
+  else {
+    
+  }
 }
 void OnReceivePC2(byte PN) {
   #if DEBUG
@@ -206,7 +213,10 @@ void OnReceivePC2(byte PN) {
     Serial.println(PN, HEX);
   #endif
   
-  MidiOutPC2(PN);
+  if (PN < 50) MidiOutPC2(PN);
+  else {
+    
+  }
 }
 
 void OnReceiveCC1(byte CN, byte CV) {
@@ -254,6 +264,52 @@ void MidiOutCC2(byte cn, byte cv) {
   Serial.write(cv);
 }
 
+void ZoomParamEnable() {
+  Serial.write(0xF0);
+  Serial.write(0x52);
+  Serial.write(0x00);
+  Serial.write(0x58);
+  Serial.write(0x50);
+  Serial.write(0xF7);
+}
+void ZoomParamDisable() {
+  Serial.write(0xF0);
+  Serial.write(0x52);
+  Serial.write(0x00);
+  Serial.write(0x58);
+  Serial.write(0x51);
+  Serial.write(0xF7);
+}
+void ZoomSwitchOn(byte Slot)
+{
+  unsigned char v = 1;
+  
+  Serial.write(0xF0);
+  Serial.write(0x52);
+  Serial.write(0x00);
+  Serial.write(0x58);
+  Serial.write(0x31);
+  Serial.write(Slot - 1);
+  Serial.write(0x00);
+  Serial.write(0x01); // Serial.write(v & 0x7F);
+  Serial.write(0x00); // Serial.write((v>>7) & 0x7F);
+  Serial.write(0xF7);
+}
+void ZoomSwitchOff(byte Slot)
+{
+  unsigned char v = 0;
+  
+  Serial.write(0xF0);
+  Serial.write(0x52);
+  Serial.write(0x00);
+  Serial.write(0x58);
+  Serial.write(0x31);
+  Serial.write(Slot - 1);
+  Serial.write(0x00);
+  Serial.write(0x00); // Serial.write(v & 0x7F);
+  Serial.write(0x00); // Serial.write((v>>7) & 0x7F);
+  Serial.write(0xF7);
+}
 
 // DEBUG FUNCTIONS
 void Log(byte x)    { Serial.write(x); }
