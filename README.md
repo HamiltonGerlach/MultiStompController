@@ -18,7 +18,6 @@ Resources used:
 - DPDT momentary switch for tuner control
 
 
-
 Wiring instructions:
 
 - Connect [VIN, GND] of Arduino to 9V DC (careful, center negative).
@@ -42,3 +41,11 @@ Connection instructions:
 - Connect MIDI Out to the Strymon Iridium.
 
 - Connect USBHost to the Zoom Multistomp.
+
+
+Prototype images:
+
+![Overview 1](https://github.com/HamiltonGerlach/MultiStompController/blob/master/doc/images/Overview1.jpg)
+![Overview 2](https://github.com/HamiltonGerlach/MultiStompController/blob/master/doc/images/Overview2.jpg)
+
+
