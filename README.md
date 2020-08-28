@@ -1,4 +1,4 @@
-**MultiStompController** - a compact MIDI converter that receives MIDI data from the MOEN GEC5 loop switcher (or other MIDI sources) and translates it into separate MIDI outputs for the Zoom MS-50G Multistomp (via MIDI-USB) and the Strymon Iridium / any other MIDI device (via MIDI-EXP).
+**MultiStompController** - a compact MIDI converter that receives MIDI data from the MOEN GEC5 loop switcher (or other MIDI sources) and translates it into separate MIDI outputs for the Zoom MS-50G Multistomp (via MIDI-USB) and the Strymon Iridium or any other MIDI device (via MIDI-EXP).
 
 
 Resources used:
@@ -36,9 +36,9 @@ Wiring instructions:
 
 Connection instructions:
 
-- Connect MIDI In to the MOEN GEC5 loop switcher.
+- Connect MIDI In to the MOEN GEC5 loop switcher (or other).
 
-- Connect MIDI Out to the Strymon Iridium.
+- Connect MIDI Out to the Strymon Iridium (or other).
 
 - Connect USBHost to the Zoom Multistomp.
 
