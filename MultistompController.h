@@ -10,9 +10,9 @@
 #define DEBUG_BAUDRATE 9600
 
 #if DEBUG
-  #define USB_BAUDRATE DEBUG_BAUDRATE
+  #define ZOOM_BAUDRATE DEBUG_BAUDRATE
 #else
-  #define USB_BAUDRATE MIDI_BAUDRATE
+  #define ZOOM_BAUDRATE MIDI_BAUDRATE
 #endif
 
 #define SWITCH_DEB 1000
@@ -24,8 +24,8 @@
 #define MIDI_STREAM MIDI_S
 #define MIDI_CHANNEL 2
 
-#define USB_STREAM Serial
-#define USB_CHANNEL 1
+#define ZOOM_STREAM Serial
+#define ZOOM_CHANNEL 1
 
 #define ZOOM_MSG_50G_BEGIN  {0xF0, 0x52, 0x00, 0x58}
 #define ZOOM_MSG_50G_END    {0xF7}

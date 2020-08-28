@@ -7,6 +7,16 @@ Controller::Controller() {
   this->Reset();
 }
 
+void Controller::Init(Stream *Com, byte Channel,
+                      _onReceiveCC OnReceiveCC,
+                      _onReceivePC OnReceivePC)
+{
+  this->Com = Com;
+  this->Channel = Channel;
+  this->OnReceiveCC = OnReceiveCC;
+  this->OnReceivePC = OnReceivePC;
+}
+
 void Controller::Update(Buffer *Mem) {  
   if (Mem->CCTerm(Channel))
     RxTermCC = true;
@@ -33,13 +43,15 @@ void Controller::Reset() {
   RxPC = 0;
   RxNormCC = 0;
   RxTermCC = 0;
+  
+  RxActive = true;
 }
 
-bool Controller::IsTerminated() {
+bool Controller::Done() {
   return (RxNormCC || RxTermCC) ? true : false;
 }
 
 void Controller::OnSend() {
-  //if (RxNormCC) OnReceiveCC(Com, Channel, CN, CV);
-  //if (RxPC)     OnReceivePC(Com, Channel, PN);
+  if (RxNormCC) this->OnReceiveCC(Com, Channel, CN, CV);
+  if (RxPC)     this->OnReceivePC(Com, Channel, PN);
 }
