@@ -18,6 +18,11 @@ Resources used:
 - DPDT momentary switch for tuner control
 
 
+Arduino libraries used:
+- AltSoftSerial (https://www.pjrc.com/teensy/td_libs_AltSoftSerial.html)
+
+
+
 Wiring instructions:
 
 - Connect [VIN, GND] of Arduino to 9V DC (careful, center negative).
@@ -49,3 +54,5 @@ Prototype images:
 ![Overview 2](https://github.com/HamiltonGerlach/MultiStompController/blob/master/doc/images/Overview2.jpg)
 
 
+
+Thanks to g200kg whose work on https://github.com/g200kg/zoom-ms-utility inspired this project.
