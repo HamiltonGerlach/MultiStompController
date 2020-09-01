@@ -20,6 +20,7 @@ Resources used:
 
 Arduino libraries used:
 - AltSoftSerial (https://www.pjrc.com/teensy/td_libs_AltSoftSerial.html)
+- SoftwareSerial
 
 
 
@@ -29,7 +30,9 @@ Wiring instructions:
 
 - Connect [5V, GND] on USBHost and MIDI breakout board to [5V, GND] on Arduino.
 
-- Connect TX of Arduino to RX on USBHost (HardwareSerial).
+- Connect RX on USBHost to D02 (Pin 5) on Arduino (SoftwareSerial TX).
+
+- Connect TX on USBHost to D03 (Pin 6) on Arduino (SoftwareSerial RX).
 
 - Connect MIDI In on MIDI breakout board to D09 (Pin 12) on Arduino (AltSoftSerial RX).
 
