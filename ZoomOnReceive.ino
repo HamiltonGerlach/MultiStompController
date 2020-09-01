@@ -1,12 +1,14 @@
 // SEND EVENTS
+#include "MidiOutIf.h"
 
 // Zoom/USB receive PC
 void Zoom_OnReceivePC(Stream *Com, byte Channel, byte PN) {
   #if DEBUG
-    LogPC('R', Channel, PN)
+    LogPC('R', Channel, PN);
   #endif
 
-  //if (PN < 50) MidiOutPC(Com, Channel, PN);
+  if (PN < 50)
+    MidiOutIf::PC(Com, Channel, PN);
   //else {
     // TODO
   //}
@@ -18,5 +20,5 @@ void Zoom_OnReceiveCC(Stream *Com, byte Channel, byte CN, byte CV) {
     LogCC('R', Channel, CN, CV);
   #endif
   
-  MidiOutCC(Com, Channel, CN, CV);
+  MidiOutIf::CC(Com, Channel, CN, CV);
 }

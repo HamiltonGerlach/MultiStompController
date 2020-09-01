@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "MultistompController.h"
 #include "Controller.h"
-#include "Buffer.h"
+#include "MidiBuffer.h"
 
 Controller::Controller() {
   this->Reset();
@@ -17,18 +17,18 @@ void Controller::Init(Stream *Com, byte Channel,
   this->OnReceivePC = OnReceivePC;
 }
 
-void Controller::Update(Buffer *Mem) {  
-  if (Mem->CCTerm(Channel))
+void Controller::Update() {  
+  if (MidiBuffer::CCTerm(Channel))
     RxTermCC = true;
   
-  if (Mem->CCNorm(Channel)) {
+  if (MidiBuffer::CCNorm(Channel)) {
     RxNormCC = true;
-    CN = Mem->Data[1];
-    CV = Mem->Data[2];
+    CN = MidiBuffer::Data[1];
+    CV = MidiBuffer::Data[2];
   }
   
   if (!RxPC) {
-    PN = Mem->PC(Channel);
+    PN = MidiBuffer::PC(Channel);
     if (PN < CONTROL_BYTE)
       RxPC = true;
     }

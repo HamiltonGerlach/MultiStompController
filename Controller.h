@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 #include "MultistompController.h"
-#include "Buffer.h"
+#include "MidiBuffer.h"
 
 typedef void (*_onReceiveCC) (Stream *, byte, byte, byte);
 typedef void (*_onReceivePC) (Stream *, byte, byte);
@@ -32,7 +32,7 @@ class Controller {
     void Init(Stream *Com, byte Channel,
               _onReceiveCC OnReceiveCC, _onReceivePC OnReceivePC);
     
-    void Update(Buffer *Mem);
+    void Update();
     void Reset();
     bool Done();
     

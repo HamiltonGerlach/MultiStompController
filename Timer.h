@@ -7,10 +7,10 @@
 class Timer {
   public:
     static unsigned long TimerStart, TimerCurrent;
-    
+
     static bool Check(unsigned long DeltaT);
     static void Reset();
-    
+
   private:
     Timer();
 };
