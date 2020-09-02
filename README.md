@@ -20,6 +20,7 @@ Resources used:
 
 Arduino libraries used:
 - AltSoftSerial (https://www.pjrc.com/teensy/td_libs_AltSoftSerial.html)
+
 - SoftwareSerial
 
 
