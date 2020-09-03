@@ -22,3 +22,8 @@ void LogPC(char Direction, byte Channel, byte PN) {
   Serial.print(" PC ");
   Serial.println(PN, HEX);
 }
+
+bool rndbool() {
+  byte rnd = random(0, 2);
+  return rnd == 1 ? true : false;
+}

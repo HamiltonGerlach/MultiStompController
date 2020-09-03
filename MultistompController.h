@@ -1,7 +1,11 @@
 #ifndef MULTISTOMPCONTROLLER_H
 #define MULTISTOMPCONTROLLER_H
 
-#define ARRAY_SIZE(array) ((sizeof(array))/(sizeof(array[0])))
+#include "ZoomMsg.h"
+
+#define DEBUG true
+
+#define Z_ID ZOOM_DEVICE_MS50G
 
 #define SWITCH_DEB 1000
 #define SWITCH_TUNER 14
@@ -27,5 +31,20 @@
 
 #define ZOOM_SRAM_MEM true
 #define ZOOM_SRAM_PATCHES 5
+
+// Array / bit helper macros
+
+#define ARRAY_SIZE(array) ((sizeof(array))/(sizeof(array[0])))
+
+#define BIT_SET(arg, bit) arg |= (1 << bit)
+#define BIT_CLR(arg, bit) arg &= (~(1 << bit))
+#define BIT_FLIP(arg, bit) arg ^= (1 << bit)
+#define BIT_CHECK(arg, bit) (!!((arg) & (1 << (bit))))
+
+#define BITMASK_SET(arg, mask) arg |= mask
+#define BITMASK_CLEAR(arg, mask) arg &= (~mask)
+#define BITMASK_FLIP(arg, mask) arg ^= mask
+#define BITMASK_CHECK_ALL(arg, mask) !~((~(mask)) | (arg))
+#define BITMASK_CHECK_ANY(arg, mask) ((arg) & (mask))
 
 #endif
