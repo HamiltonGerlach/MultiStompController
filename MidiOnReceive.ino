@@ -1,5 +1,6 @@
 // SEND EVENTS
 #include "MidiOutIf.h"
+#include "Log.h"
 
 // Midi receive PC
 void Midi_OnReceivePC(Stream *Com, byte Channel, byte PN) {

@@ -33,11 +33,11 @@
 #define ZOOM_SRAM_PATCHES 5
 
 // Array / bit helper macros
-
 #define ARRAY_SIZE(array) ((sizeof(array))/(sizeof(array[0])))
+#define ARRAY_FILL(array, len, in) for (int i = 0; i < len; i++) array[i] = in
 
 #define BIT_SET(arg, bit) arg |= (1 << bit)
-#define BIT_CLR(arg, bit) arg &= (~(1 << bit))
+#define BIT_CLR(arg, bit) arg &= ~(1 << bit)
 #define BIT_FLIP(arg, bit) arg ^= (1 << bit)
 #define BIT_CHECK(arg, bit) (!!((arg) & (1 << (bit))))
 
@@ -46,5 +46,7 @@
 #define BITMASK_FLIP(arg, mask) arg ^= mask
 #define BITMASK_CHECK_ALL(arg, mask) !~((~(mask)) | (arg))
 #define BITMASK_CHECK_ANY(arg, mask) ((arg) & (mask))
+
+#define rndbool() (((byte)random(0, 2) == 1) ? true : false)
 
 #endif

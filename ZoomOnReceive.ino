@@ -1,5 +1,6 @@
 // SEND EVENTS
 #include "MidiOutIf.h"
+#include "Log.h"
 
 // Zoom/USB receive PC
 void Zoom_OnReceivePC(Stream *Com, byte Channel, byte PN) {

@@ -35,7 +35,7 @@ void setup() {
   ZoomIf::Init(&ZOOM_STREAM, ZOOM_CHANNEL);
 }
 
-
+int Slot = 1;
 // MAIN LOOP FUNCTION
 void loop() {
   // Update buffer
@@ -45,6 +45,14 @@ void loop() {
     CtrlMIDI.Update();
     CtrlZoom.Update();
   }
+
+
+  while (ZOOM_STREAM.available() > 0) {
+    byte In = ZOOM_STREAM.read();
+    
+    Serial.write(In);
+  }
+  
 
   // State check and sending routine
   if (CtrlMIDI.Done() && CtrlZoom.Done()) {
@@ -65,9 +73,13 @@ void loop() {
       bool Vector[6] = {rndbool(), rndbool(), rndbool(), rndbool(), rndbool(), rndbool()};
       byte Mask = ZoomIf::StateMask(Vector);
       Serial.println(Mask, BIN);
-      ZoomIf::SetPatchEffects(0, Mask);
-      
-      //ZoomIf::SwitchOn(0, 1);
+      ZoomIf::SetPatchEffects(0, Mask, Slot++);
+      //ZoomIf::Patch(1, true);
+      if (Slot > 6) Slot = 0;
+      //Serial.println(Slot);
+      //ZoomIf::SwitchOn(0, 4, Slot);
+      //Slot++;
+      //ZoomIf::SwitchOff(0, 4);
     #endif
     //// DEBUG
     
