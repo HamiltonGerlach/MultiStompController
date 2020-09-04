@@ -23,6 +23,7 @@ class ZoomIf {
     
     #if ZOOM_SRAM_MEM
       static _zoomPatchType PatchMem[ZOOM_SRAM_PATCHES];
+      static bool PatchModified[ZOOM_SRAM_PATCHES];
     #endif
     
     static void Init(Stream *Com, byte Channel);
@@ -41,18 +42,20 @@ class ZoomIf {
     static void CachePatches();
     static void SetPatchEffects(byte PN, byte StateMask, byte FocusEffect);
     static byte StateMask(bool StateVector[]);
+    static void FocusEffect(byte Effect);
     
     static void Tuner(bool State);
     
     static void Patch(byte PN);
     static void Patch(byte PN, bool Force);
     
-    static void RestorePatch(byte PN); 
+    static void RestorePatch(byte PN);
+    static void SetModified(byte PN);
     
     static void LogMem();
     static void LogBuffer();
     
-    static void FocusEffect(byte Effect);
+    
   private:
     ZoomIf();
 };

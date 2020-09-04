@@ -2,7 +2,6 @@
 #include <SoftwareSerial.h>
 
 #include "MultistompController.h"
-
 #include "Controller.h"
 #include "MidiBuffer.h"
 #include "Timer.h"
@@ -26,7 +25,7 @@ void setup() {
   ZOOM_STREAM.flush();
 
   #if DEBUG
-  Serial.begin(DEBUG_BAUDRATE);        // Debug Out
+    Serial.begin(DEBUG_BAUDRATE);        // Debug Out
   #endif
   
   // Setup controller streams and callbacks
@@ -35,7 +34,7 @@ void setup() {
   ZoomIf::Init(&ZOOM_STREAM, ZOOM_CHANNEL);
 }
 
-int Slot = 0;
+
 // MAIN LOOP FUNCTION
 void loop() {
   // Update buffer
@@ -46,6 +45,7 @@ void loop() {
     CtrlZoom.Update();
   }
 
+
   // State check and sending routine
   if (CtrlMIDI.Done() && CtrlZoom.Done()) {
     ZoomIf::Tuner(false);     // Tuner off message
@@ -55,30 +55,16 @@ void loop() {
     
     MidiBuffer::Flush();
   }
+
   
   // Tuner switch handling
   if ((digitalRead(SWITCH_TUNER) != HIGH) && Timer::Check(SWITCH_DEB)) {
-    //ZoomIf::Tuner(true);    // Tuner on message
-    
-    //// DEBUG
-    #if DEBUG
-      bool Vector[6] = {rndbool(), rndbool(), rndbool(), rndbool(), rndbool(), rndbool()};
-      byte Mask = ZoomIf::StateMask(Vector);
-      Serial.println(Slot);
-      Serial.println(Slot, BIN);
-      ZoomIf::SetPatchEffects(0, Mask, Slot++);
-      if (Slot > 5) Slot = 0;
-      //Serial.println(Slot);
-      //ZoomIf::SwitchOn(0, 4, Slot);
-      //Slot++;
-      //ZoomIf::SwitchOff(0, 4);
-    #endif
-    //// DEBUG
-    
+    ZoomIf::Tuner(true);    // Tuner on message
     Timer::Reset();
   }
 
   
+  // Debug input from Zoom
   #if DEBUG
     while (ZOOM_STREAM.available() > 0) Serial.write(ZOOM_STREAM.read());
   #endif

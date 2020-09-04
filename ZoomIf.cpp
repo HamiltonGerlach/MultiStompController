@@ -13,6 +13,7 @@ static byte             ZoomIf::CurrentEffects = CONTROL_BYTE;
 static _zoomPatchType   ZoomIf::Buffer;
 #if ZOOM_SRAM_MEM
   static _zoomPatchType ZoomIf::PatchMem[ZOOM_SRAM_PATCHES];
+  static bool           ZoomIf::PatchModified[ZOOM_SRAM_PATCHES];
 #endif
 
 static byte             PatchFxOffsets[ZOOM_EFF_NO] =
@@ -50,6 +51,10 @@ void ZoomIf::Init(Stream *Com, byte Channel) {
   ZoomIf::ParamEnable();
   ZoomIf::CachePatches();
   ZoomIf::Patch(0);
+  
+  #if ZOOM_SRAM_MEM
+    ARRAY_FILL(PatchModified, ZOOM_SRAM_PATCHES, false);
+  #endif
 }
 
 
@@ -91,6 +96,8 @@ void ZoomIf::SwitchOn(byte PN, byte Slot) {
   
   ZoomIf::Patch(PN);
   Com->write(Msg, ARRAY_SIZE(Msg));
+  
+  ZoomIf::SetModified(CurrentPatch);
 }
 
 
@@ -101,8 +108,10 @@ void ZoomIf::SwitchOff(byte PN, byte Slot) {
   
   Msg[5] = Slot - 1;
   
-  ZoomIf::Patch(CurrentPatch);
+  ZoomIf::Patch(PN);
   Com->write(Msg, ARRAY_SIZE(Msg));
+  
+  ZoomIf::SetModified(CurrentPatch);
 }
 
 
@@ -115,6 +124,8 @@ void ZoomIf::ParamEdit(byte Slot, byte Param, int Value) {
   Msg[8] = (Value>>7) & 0x7F; // 7 bit MSB
   
   Com->write(Msg, ARRAY_SIZE(Msg));
+  
+  ZoomIf::SetModified(CurrentPatch);
 }
 
 
@@ -131,6 +142,8 @@ void ZoomIf::SwitchEffects(byte PN, bool *StateVector) {
     
     Com->write(Msg, ARRAY_SIZE(Msg));
   }
+  
+  ZoomIf::SetModified(CurrentPatch);
 }
 
 
@@ -211,17 +224,19 @@ void ZoomIf::SetPatchEffects(byte PN, byte StateMask, byte FocusEffect) {
         
         Buffer.data[PatchFxOffsets[i]] = TypeByte;
       }
+      
+      ZoomIf::FocusEffect(FocusEffect);
+      
+      #if DEBUG
+        Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
+        Serial.println("");
+      #endif
+      
+      // Write patch data
+      Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
+      
+      ZoomIf::SetModified(CurrentPatch);
     }
-    
-    ZoomIf::FocusEffect(FocusEffect);
-    
-    #if DEBUG
-      Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-      Serial.println("");
-    #endif
-    
-    // Write patch data
-    Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
   #endif
 }
 
@@ -239,6 +254,35 @@ byte ZoomIf::StateMask(bool StateVector[]) {
 }
 
 
+void ZoomIf::FocusEffect(byte Effect) {
+  byte Focus = FocusTable[Effect];
+  byte b0, b1, b2;
+  
+  b0 = Buffer.data[ZOOM_EFF_FOCUS_BIT_0_OFFSET];
+  b1 = Buffer.data[ZOOM_EFF_FOCUS_BIT_1_OFFSET];
+  b2 = Buffer.data[ZOOM_EFF_FOCUS_BIT_2_OFFSET];
+  
+  if BIT_CHECK(Focus, 0)
+    BIT_SET(b0, ZOOM_EFF_FOCUS_BIT_0_INDEX);
+  else
+    BIT_CLR(b0, ZOOM_EFF_FOCUS_BIT_0_INDEX);
+    
+  if BIT_CHECK(Focus, 1)
+    BIT_SET(b1, ZOOM_EFF_FOCUS_BIT_1_INDEX);
+  else
+    BIT_CLR(b1, ZOOM_EFF_FOCUS_BIT_1_INDEX);
+    
+  if BIT_CHECK(Focus, 2)
+    BIT_SET(b2, ZOOM_EFF_FOCUS_BIT_2_INDEX);
+  else
+    BIT_CLR(b2, ZOOM_EFF_FOCUS_BIT_2_INDEX);
+  
+  Buffer.data[ZOOM_EFF_FOCUS_BIT_0_OFFSET] = b0;
+  Buffer.data[ZOOM_EFF_FOCUS_BIT_1_OFFSET] = b1;
+  Buffer.data[ZOOM_EFF_FOCUS_BIT_2_OFFSET] = b2;
+}
+
+
 void ZoomIf::Tuner(bool State) {
   byte Value = State ? 0x7F : 0x00;
   
@@ -253,15 +297,17 @@ void ZoomIf::Tuner(bool State) {
 void ZoomIf::Patch(byte PN) {
   if (PN != CurrentPatch)
   {
+    ZoomIf::RestorePatch(CurrentPatch);
     MidiOutIf::PC(Com, Channel, PN);
     CurrentPatch = PN;
   }
 }
-////////// TODO RESTORE PREVIOUS PATCH FROM MEMORY
+
 
 void ZoomIf::Patch(byte PN, bool Force) {
   if ((PN != CurrentPatch) || (Force))
   {
+    ZoomIf::RestorePatch(CurrentPatch);
     MidiOutIf::PC(Com, Channel, PN);
     CurrentPatch = PN;
   }
@@ -269,15 +315,23 @@ void ZoomIf::Patch(byte PN, bool Force) {
 
 
 void ZoomIf::RestorePatch(byte PN) {
-  ZoomIf::Patch(PN);
-  
   #if ZOOM_SRAM_MEM
     if (PN < ZOOM_SRAM_PATCHES)
     {
-      Buffer = ZoomIf::PatchMem[PN];
-      
-      Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
+      if (PatchModified[PN])
+      {
+        Buffer = ZoomIf::PatchMem[PN];
+        Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
+        PatchModified[PN] = false;
+      }
     }
+  #endif
+}
+
+
+void ZoomIf::SetModified(byte PN) {
+  #if ZOOM_SRAM_MEM
+    if (PN < ZOOM_SRAM_PATCHES) PatchModified[PN] = true;
   #endif
 }
 
@@ -299,49 +353,3 @@ void ZoomIf::LogBuffer() {
   Serial.println("");
 }
 
-
-void ZoomIf::FocusEffect(byte Effect) {
-  byte Focus = FocusTable[Effect];
-  byte b0, b1, b2;
-  
-  // Serial.println(Focus, BIN);
-  
-  b0 = Buffer.data[ZOOM_EFF_FOCUS_BIT_0_OFFSET];
-  b1 = Buffer.data[ZOOM_EFF_FOCUS_BIT_1_OFFSET];
-  b2 = Buffer.data[ZOOM_EFF_FOCUS_BIT_2_OFFSET];
-  
-  // Serial.println("");
-  // Serial.println(b0, BIN);
-  // Serial.println(b1, BIN);
-  // Serial.println(b2, BIN);
-  // Serial.println("");
-  
-  if BIT_CHECK(Focus, 0)
-    BIT_SET(b0, ZOOM_EFF_FOCUS_BIT_0_INDEX);
-  else
-    BIT_CLR(b0, ZOOM_EFF_FOCUS_BIT_0_INDEX);
-    
-  if BIT_CHECK(Focus, 1)
-    BIT_SET(b1, ZOOM_EFF_FOCUS_BIT_1_INDEX);
-  else
-    BIT_CLR(b1, ZOOM_EFF_FOCUS_BIT_1_INDEX);
-    
-  if BIT_CHECK(Focus, 2)
-    BIT_SET(b2, ZOOM_EFF_FOCUS_BIT_2_INDEX);
-  else
-    BIT_CLR(b2, ZOOM_EFF_FOCUS_BIT_2_INDEX);
-  
-  // Serial.println(BIT_CHECK(Focus, 0));
-  // Serial.println(BIT_CHECK(Focus, 1));
-  // Serial.println(BIT_CHECK(Focus, 2));
-  // Serial.println("");
-  // 
-  // Serial.println(b0, BIN);
-  // Serial.println(b1, BIN);
-  // Serial.println(b2, BIN);
-  // Serial.println("");
-  
-  Buffer.data[ZOOM_EFF_FOCUS_BIT_0_OFFSET] = b0;
-  Buffer.data[ZOOM_EFF_FOCUS_BIT_1_OFFSET] = b1;
-  Buffer.data[ZOOM_EFF_FOCUS_BIT_2_OFFSET] = b2;
-}

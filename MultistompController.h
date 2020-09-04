@@ -3,7 +3,7 @@
 
 #include "ZoomMsg.h"
 
-#define DEBUG true
+#define DEBUG false
 
 #define Z_ID ZOOM_DEVICE_MS50G
 
