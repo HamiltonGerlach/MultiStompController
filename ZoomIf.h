@@ -9,12 +9,16 @@
 typedef Array<byte, ZOOM_PATCH_LENGTH> _zoomPatchType;
 typedef Array<byte, ZOOM_IDENTITY_LENGTH> _zoomIdType;
 
+const byte FocusTable[ZOOM_EFF_NO] = {TBL_FOCUS_1, TBL_FOCUS_2, TBL_FOCUS_3,
+                                      TBL_FOCUS_4, TBL_FOCUS_5, TBL_FOCUS_6};
+
 // Zoom interface class
 class ZoomIf {
   public:
     static Stream *Com;
     static byte Channel;
     static byte CurrentPatch;
+    static byte CurrentEffects;
     static _zoomPatchType Buffer;
     
     #if ZOOM_SRAM_MEM

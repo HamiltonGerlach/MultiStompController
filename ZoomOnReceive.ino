@@ -9,10 +9,10 @@ void Zoom_OnReceivePC(Stream *Com, byte Channel, byte PN) {
   #endif
 
   if (PN < 50)
-    MidiOutIf::PC(Com, Channel, PN);
-  //else {
+    ZoomIf::Patch(PN);
+  else {
     // TODO
-  //}
+  }
 }
 
 // Zoom/USB receive CC
@@ -21,5 +21,5 @@ void Zoom_OnReceiveCC(Stream *Com, byte Channel, byte CN, byte CV) {
     LogCC('R', Channel, CN, CV);
   #endif
   
-  MidiOutIf::CC(Com, Channel, CN, CV);
+  
 }

@@ -39,7 +39,7 @@
 #define BIT_SET(arg, bit) arg |= (1 << bit)
 #define BIT_CLR(arg, bit) arg &= ~(1 << bit)
 #define BIT_FLIP(arg, bit) arg ^= (1 << bit)
-#define BIT_CHECK(arg, bit) (!!((arg) & (1 << (bit))))
+#define BIT_CHECK(arg, bit) ((!!((arg) & (1 << (bit)))) == 1)
 
 #define BITMASK_SET(arg, mask) arg |= mask
 #define BITMASK_CLEAR(arg, mask) arg &= (~mask)

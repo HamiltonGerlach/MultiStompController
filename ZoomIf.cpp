@@ -9,12 +9,14 @@
 static Stream           *ZoomIf::Com;
 static byte             ZoomIf::Channel;
 static byte             ZoomIf::CurrentPatch = CONTROL_BYTE;
+static byte             ZoomIf::CurrentEffects = CONTROL_BYTE;
 static _zoomPatchType   ZoomIf::Buffer;
 #if ZOOM_SRAM_MEM
   static _zoomPatchType ZoomIf::PatchMem[ZOOM_SRAM_PATCHES];
 #endif
 
-static byte             PatchFxOffsets[6] = {ZOOM_MSG_OFFSET_EFF_ON_1,
+static byte             PatchFxOffsets[ZOOM_EFF_NO] =
+                                            {ZOOM_MSG_OFFSET_EFF_ON_1,
                                              ZOOM_MSG_OFFSET_EFF_ON_2,
                                              ZOOM_MSG_OFFSET_EFF_ON_3,
                                              ZOOM_MSG_OFFSET_EFF_ON_4,
@@ -193,8 +195,10 @@ void ZoomIf::SetPatchEffects(byte PN, byte StateMask, byte FocusEffect) {
     {
       Buffer = ZoomIf::PatchMem[PN];
       
-      Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-      Serial.println("");
+      #if DEBUG
+        Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
+        Serial.println("");
+      #endif
       
       for (int i = 0; i < ZOOM_EFF_NO - 3; i++)
       {
@@ -211,8 +215,10 @@ void ZoomIf::SetPatchEffects(byte PN, byte StateMask, byte FocusEffect) {
     
     ZoomIf::FocusEffect(FocusEffect);
     
-    Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-    Serial.println("");
+    #if DEBUG
+      Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
+      Serial.println("");
+    #endif
     
     // Write patch data
     Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
@@ -295,13 +301,21 @@ void ZoomIf::LogBuffer() {
 
 
 void ZoomIf::FocusEffect(byte Effect) {
-  byte Focus = ZOOM_EFF_NO - Effect;
+  byte Focus = FocusTable[Effect];
   byte b0, b1, b2;
+  
+  // Serial.println(Focus, BIN);
   
   b0 = Buffer.data[ZOOM_EFF_FOCUS_BIT_0_OFFSET];
   b1 = Buffer.data[ZOOM_EFF_FOCUS_BIT_1_OFFSET];
   b2 = Buffer.data[ZOOM_EFF_FOCUS_BIT_2_OFFSET];
-    
+  
+  // Serial.println("");
+  // Serial.println(b0, BIN);
+  // Serial.println(b1, BIN);
+  // Serial.println(b2, BIN);
+  // Serial.println("");
+  
   if BIT_CHECK(Focus, 0)
     BIT_SET(b0, ZOOM_EFF_FOCUS_BIT_0_INDEX);
   else
@@ -316,6 +330,16 @@ void ZoomIf::FocusEffect(byte Effect) {
     BIT_SET(b2, ZOOM_EFF_FOCUS_BIT_2_INDEX);
   else
     BIT_CLR(b2, ZOOM_EFF_FOCUS_BIT_2_INDEX);
+  
+  // Serial.println(BIT_CHECK(Focus, 0));
+  // Serial.println(BIT_CHECK(Focus, 1));
+  // Serial.println(BIT_CHECK(Focus, 2));
+  // Serial.println("");
+  // 
+  // Serial.println(b0, BIN);
+  // Serial.println(b1, BIN);
+  // Serial.println(b2, BIN);
+  // Serial.println("");
   
   Buffer.data[ZOOM_EFF_FOCUS_BIT_0_OFFSET] = b0;
   Buffer.data[ZOOM_EFF_FOCUS_BIT_1_OFFSET] = b1;

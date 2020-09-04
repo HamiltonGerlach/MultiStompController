@@ -50,4 +50,11 @@
 #define ZOOM_EFF_FOCUS_BIT_1_INDEX 3
 #define ZOOM_EFF_FOCUS_BIT_2_INDEX 6
 
+#define TBL_FOCUS_1 3
+#define TBL_FOCUS_2 1
+#define TBL_FOCUS_3 6
+#define TBL_FOCUS_4 2
+#define TBL_FOCUS_5 4
+#define TBL_FOCUS_6 0
+
 #endif
