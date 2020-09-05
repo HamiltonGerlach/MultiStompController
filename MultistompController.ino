@@ -1,4 +1,4 @@
-#include <AltSoftSerial.h>
+ #include <AltSoftSerial.h>
 #include <SoftwareSerial.h>
 
 #include "MultistompController.h"
@@ -29,8 +29,8 @@ void setup() {
   #endif
   
   // Setup controller streams and callbacks
-  CtrlMIDI.Init(&MIDI_STREAM, MIDI_CHANNEL, &Midi_OnReceiveCC, &Midi_OnReceivePC);
-  CtrlZoom.Init(&ZOOM_STREAM, ZOOM_CHANNEL, &Zoom_OnReceiveCC, &Zoom_OnReceivePC);
+  CtrlMIDI.Init(&MIDI_STREAM, MIDI_CHANNEL, &Midi_OnReceiveCC, &Midi_OnReceivePC, &Midi_OnReset);
+  CtrlZoom.Init(&ZOOM_STREAM, ZOOM_CHANNEL, &Zoom_OnReceiveCC, &Zoom_OnReceivePC, &Zoom_OnReset);
   ZoomIf::Init(&ZOOM_STREAM, ZOOM_CHANNEL);
 }
 

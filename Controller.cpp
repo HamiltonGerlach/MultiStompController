@@ -9,12 +9,14 @@ Controller::Controller() {
 
 void Controller::Init(Stream *Com, byte Channel,
                       _onReceiveCC OnReceiveCC,
-                      _onReceivePC OnReceivePC)
+                      _onReceivePC OnReceivePC,
+                      _onReset OnReset)
 {
   this->Com = Com;
   this->Channel = Channel;
   this->OnReceiveCC = OnReceiveCC;
   this->OnReceivePC = OnReceivePC;
+  this->OnReset     = OnReset;
 }
 
 void Controller::Update() {  
@@ -45,6 +47,8 @@ void Controller::Reset() {
   RxTermCC = 0;
   
   RxActive = true;
+  
+  this->OnReset(Com);
 }
 
 bool Controller::Done() {

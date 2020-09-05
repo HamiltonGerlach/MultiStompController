@@ -36,6 +36,8 @@
 #define ARRAY_SIZE(array) ((sizeof(array))/(sizeof(array[0])))
 #define ARRAY_FILL(array, len, in) for (int i = 0; i < len; i++) array[i] = in
 
+#define BIT(bit) (1 << bit)
+
 #define BIT_SET(arg, bit) arg |= (1 << bit)
 #define BIT_CLR(arg, bit) arg &= ~(1 << bit)
 #define BIT_FLIP(arg, bit) arg ^= (1 << bit)

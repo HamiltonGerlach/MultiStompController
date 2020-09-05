@@ -8,6 +8,7 @@
 
 typedef Array<byte, ZOOM_PATCH_LENGTH> _zoomPatchType;
 typedef Array<byte, ZOOM_IDENTITY_LENGTH> _zoomIdType;
+typedef Array<bool, ZOOM_EFF_NO> _zoomStateVector;
 
 const byte FocusTable[ZOOM_EFF_NO] = {TBL_FOCUS_1, TBL_FOCUS_2, TBL_FOCUS_3,
                                       TBL_FOCUS_4, TBL_FOCUS_5, TBL_FOCUS_6};
@@ -19,6 +20,7 @@ class ZoomIf {
     static byte Channel;
     static byte CurrentPatch;
     static byte CurrentEffects;
+    static byte CurrentFocus;
     static _zoomPatchType Buffer;
     
     #if ZOOM_SRAM_MEM
@@ -29,32 +31,34 @@ class ZoomIf {
     static void Init(Stream *Com, byte Channel);
     static bool IdentityRequest();
     
+    static void Tuner(bool State);
+    
     static void ParamEnable();
     static void ParamDisable();
     static void ParamEdit(byte Slot, byte Param, int Value);
         
     static void SwitchOn(byte PN, byte Slot);
     static void SwitchOff(byte PN, byte Slot);
-    static void SwitchEffects(byte PN, bool *StateVector);
+    static void SwitchEffects(byte PN, byte StateMask);
     
     static _zoomPatchType RequestPatch(byte PN);
     static void MemStore(byte PN);
     static void CachePatches();
-    static void SetPatchEffects(byte PN, byte StateMask, byte FocusEffect);
-    static byte StateMask(bool StateVector[]);
-    static void FocusEffect(byte Effect);
+    static void RestorePatch(byte PN);
+    static void SetModified(byte PN);
     
-    static void Tuner(bool State);
+    static _zoomStateVector GetPatchEffects(byte PN);
+    static void SetPatchEffects(byte PN, byte StateMask);
+    static void FocusEffect(byte Effect);
     
     static void Patch(byte PN);
     static void Patch(byte PN, bool Force);
     
-    static void RestorePatch(byte PN);
-    static void SetModified(byte PN);
+    static byte StateMask(_zoomStateVector StateVector);
+    static _zoomStateVector StateVector(byte StateMask);
     
     static void LogMem();
     static void LogBuffer();
-    
     
   private:
     ZoomIf();

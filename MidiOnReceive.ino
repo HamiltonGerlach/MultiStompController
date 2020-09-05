@@ -19,3 +19,8 @@ void Midi_OnReceiveCC(Stream *Com, byte Channel, byte CN, byte CV) {
   
   MidiOutIf::CC(Com, Channel, CN, CV);
 }
+
+// Midi reset
+void Midi_OnReset(Stream *Com) {
+  return;
+}

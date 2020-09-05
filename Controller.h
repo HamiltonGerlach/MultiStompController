@@ -7,6 +7,7 @@
 
 typedef void (*_onReceiveCC) (Stream *, byte, byte, byte);
 typedef void (*_onReceivePC) (Stream *, byte, byte);
+typedef void (*_onReset) (Stream *);
 
 // Controller struct
 class Controller {
@@ -26,11 +27,14 @@ class Controller {
     
     _onReceiveCC OnReceiveCC;
     _onReceivePC OnReceivePC;
+    _onReset OnReset;
     
     Controller();
     
     void Init(Stream *Com, byte Channel,
-              _onReceiveCC OnReceiveCC, _onReceivePC OnReceivePC);
+              _onReceiveCC OnReceiveCC,
+              _onReceivePC OnReceivePC,
+              _onReset OnReset);
     
     void Update();
     void Reset();
