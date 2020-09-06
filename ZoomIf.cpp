@@ -339,47 +339,47 @@ void ZoomIf::FocusEffect(byte Effect) {
 
 
 void ZoomIf::Patch(byte PN) {
-  #if ZOOM_SRAM_MEM
-    if (PN < ZOOM_SRAM_PATCHES)
-      CurrentEffects = EffectStates[PN];
-  #endif
-  
   if (PN != CurrentPatch)
   {
     MidiOutIf::PC(Com, Channel, PN);
     CurrentPatch = PN;
+    
+    #if ZOOM_SRAM_MEM
+      if (PN < ZOOM_SRAM_PATCHES)
+        CurrentEffects = EffectStates[PN];
+    #endif
   }
 }
 
 
-void ZoomIf::Patch(byte PN, bool Restore) {  
-  #if ZOOM_SRAM_MEM
-    if (PN < ZOOM_SRAM_PATCHES)
-      CurrentEffects = EffectStates[PN];
-  #endif
-  
+void ZoomIf::Patch(byte PN, bool Restore) {
   if (PN != CurrentPatch)
   {
     if (Restore) ZoomIf::RestorePatch(CurrentPatch);
     
     MidiOutIf::PC(Com, Channel, PN);
     CurrentPatch = PN;
+    
+    #if ZOOM_SRAM_MEM
+      if (PN < ZOOM_SRAM_PATCHES)
+        CurrentEffects = EffectStates[PN];
+    #endif
   }
 }
 
 
 void ZoomIf::Patch(byte PN, bool Restore, bool Force) {
-  #if ZOOM_SRAM_MEM
-    if (PN < ZOOM_SRAM_PATCHES)
-      CurrentEffects = EffectStates[PN];
-  #endif
-
   if ((PN != CurrentPatch) || (Force))
   {
     if (Restore) ZoomIf::RestorePatch(CurrentPatch);
     
     MidiOutIf::PC(Com, Channel, PN);
     CurrentPatch = PN;
+    
+    #if ZOOM_SRAM_MEM
+      if (PN < ZOOM_SRAM_PATCHES)
+        CurrentEffects = EffectStates[PN];
+    #endif
   }
 }
 

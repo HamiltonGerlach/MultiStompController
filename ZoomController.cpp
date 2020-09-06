@@ -57,12 +57,15 @@ void ZoomController::OnResetCtrl() {
   
   
   if (State & StateMode::PatchChange) {
-    Patch = PN;
-    ZoomIf::Patch(PN);
-    
-    #if DEBUG
-      Serial.println("PatchChange");
-    #endif
+    if (PN != Patch)
+    {
+      Patch = PN;
+      ZoomIf::Patch(PN, true);
+      
+      #if DEBUG
+        Serial.println("PatchChange");
+      #endif
+    }
   }  
   
   
@@ -78,65 +81,98 @@ void ZoomController::OnResetCtrl() {
   
   
   if (State & StateMode::SetEffects) {
+    #if DEBUG
+      Serial.println("SetEffects");
+    #endif
+    
+    Serial.println(Effects, BIN);
+    
     byte EffectsCommon = Effects & CV;
-    byte EffectsDiff = ~EffectsCommon;
+    byte EffectsDiff = !EffectsCommon;
+    
+    Serial.println(EffectsCommon, BIN);
+    Serial.println(EffectsDiff, BIN);
+    
     
     if (BIT_CHECK(EffectsDiff, 3) ||
         BIT_CHECK(EffectsDiff, 4) ||
         BIT_CHECK(EffectsDiff, 5))
     {
       ZoomIf::SetPatchEffects(Patch, CV);
+      
+      #if DEBUG
+        Serial.println("SetPatchEffects");
+      #endif
     }
     else {
-      for (int i = 0; i < 3; i++) {
-        if (BIT_SET(CV, i))
-          ZoomIf::SwitchOn(Patch, i + 1);
-        else
-          ZoomIf::SwitchOff(Patch, i + 1);
+      if (EffectsDiff != 0)
+      {
+        for (int i = 0; i < 3; i++) {
+          if (BIT_SET(EffectsDiff, i))
+            ZoomIf::SwitchOn(Patch, i + 1);
+          else
+            ZoomIf::SwitchOff(Patch, i + 1);
+        }
       }
+      
+      #if DEBUG
+        Serial.println("Incremental");
+      #endif
     }
-    
-    #if DEBUG
-      Serial.println("SetEffects");
-    #endif
   }
   
   
   
   if (State & StateMode::SwitchOn) {
+    #if DEBUG
+      Serial.println("SwitchOn");
+    #endif
+    
     if (BIT_CHECK(CV, 3) || BIT_CHECK(CV, 4) || BIT_CHECK(CV, 5)) {
       BITMASK_SET(Effects, CV);
       ZoomIf::SetPatchEffects(Patch, Effects);
+      
+      #if DEBUG
+        Serial.println("SetPatchEffects");
+      #endif
     }
     else {
       for (int i = 0; i < 3; i++) {
         if (BIT_SET(Effects, i))
           ZoomIf::SwitchOn(Patch, i + 1);
       }
+      
+      #if DEBUG
+        Serial.println("Incremental");
+      #endif
     }
-    
-    #if DEBUG
-      Serial.println("SwitchOn");
-    #endif
   }
   
   
   
-  if (State & StateMode::SwitchOff) {    
+  if (State & StateMode::SwitchOff) {
+    #if DEBUG
+      Serial.println("SwitchOff");
+    #endif
+    
     if (BIT_CHECK(CV, 3) || BIT_CHECK(CV, 4) || BIT_CHECK(CV, 5)) {
       BITMASK_CLEAR(Effects, CV);
       ZoomIf::SetPatchEffects(Patch, Effects);
+      
+      #if DEBUG
+        Serial.println("SetPatchEffects");
+      #endif
     }
     else {
       for (int i = 0; i < 3; i++) {
         if (BIT_SET(Effects, i))
           ZoomIf::SwitchOff(Patch, i + 1);
       }
+      
+      #if DEBUG
+        Serial.println("Incremental");
+      #endif
     }
-    
-    #if DEBUG
-      Serial.println("SwitchOff");
-    #endif
   }
   
   
