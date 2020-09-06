@@ -52,6 +52,7 @@ void ZoomController::OnResetCtrl() {
   byte Effects = ZoomIf::CurrentEffects;
   
   #if DEBUG
+    Serial.print(F("CV In: "));
     Serial.println(CV, BIN);
   #endif
   
@@ -63,7 +64,7 @@ void ZoomController::OnResetCtrl() {
       ZoomIf::Patch(PN, true);
       
       #if DEBUG
-        Serial.println("PatchChange");
+        Serial.println(F("PatchChange"));
       #endif
     }
   }  
@@ -74,7 +75,7 @@ void ZoomController::OnResetCtrl() {
     //not_implemented();
     
     #if DEBUG
-      Serial.println("FocusChange");
+      Serial.println(F("FocusChange"));
     #endif
   }
   
@@ -82,17 +83,20 @@ void ZoomController::OnResetCtrl() {
   
   if (State & StateMode::SetEffects) {
     #if DEBUG
-      Serial.println("SetEffects");
+      Serial.println(F("SetEffects"));
     #endif
     
+    Serial.print(F("Current Effects: "));
     Serial.println(Effects, BIN);
     
     byte EffectsCommon = Effects & CV;
-    byte EffectsDiff = !EffectsCommon;
+    byte EffectsDiff = EffectsCommon ^ CV;
     
+    Serial.print(F("Common Effects: "));
     Serial.println(EffectsCommon, BIN);
-    Serial.println(EffectsDiff, BIN);
     
+    Serial.print(F("Diff Effects: "));
+    Serial.println(EffectsDiff, BIN);
     
     if (BIT_CHECK(EffectsDiff, 3) ||
         BIT_CHECK(EffectsDiff, 4) ||
@@ -101,7 +105,7 @@ void ZoomController::OnResetCtrl() {
       ZoomIf::SetPatchEffects(Patch, CV);
       
       #if DEBUG
-        Serial.println("SetPatchEffects");
+        Serial.println(F("SetPatchEffects"));
       #endif
     }
     else {
@@ -116,7 +120,7 @@ void ZoomController::OnResetCtrl() {
       }
       
       #if DEBUG
-        Serial.println("Incremental");
+        Serial.println(F("Incremental"));
       #endif
     }
   }
@@ -125,7 +129,7 @@ void ZoomController::OnResetCtrl() {
   
   if (State & StateMode::SwitchOn) {
     #if DEBUG
-      Serial.println("SwitchOn");
+      Serial.println(F("SwitchOn"));
     #endif
     
     if (BIT_CHECK(CV, 3) || BIT_CHECK(CV, 4) || BIT_CHECK(CV, 5)) {
@@ -133,7 +137,7 @@ void ZoomController::OnResetCtrl() {
       ZoomIf::SetPatchEffects(Patch, Effects);
       
       #if DEBUG
-        Serial.println("SetPatchEffects");
+        Serial.println(F("SetPatchEffects"));
       #endif
     }
     else {
@@ -143,7 +147,7 @@ void ZoomController::OnResetCtrl() {
       }
       
       #if DEBUG
-        Serial.println("Incremental");
+        Serial.println(F("Incremental"));
       #endif
     }
   }
@@ -152,7 +156,7 @@ void ZoomController::OnResetCtrl() {
   
   if (State & StateMode::SwitchOff) {
     #if DEBUG
-      Serial.println("SwitchOff");
+      Serial.println(F("SwitchOff"));
     #endif
     
     if (BIT_CHECK(CV, 3) || BIT_CHECK(CV, 4) || BIT_CHECK(CV, 5)) {
@@ -160,7 +164,7 @@ void ZoomController::OnResetCtrl() {
       ZoomIf::SetPatchEffects(Patch, Effects);
       
       #if DEBUG
-        Serial.println("SetPatchEffects");
+        Serial.println(F("SetPatchEffects"));
       #endif
     }
     else {
@@ -170,7 +174,7 @@ void ZoomController::OnResetCtrl() {
       }
       
       #if DEBUG
-        Serial.println("Incremental");
+        Serial.println(F("Incremental"));
       #endif
     }
   }
@@ -182,7 +186,7 @@ void ZoomController::OnResetCtrl() {
     //not_implemented();
     
     #if DEBUG
-      Serial.println("CustomMsg");
+      Serial.println(F("CustomMsg"));
     #endif
   }
   

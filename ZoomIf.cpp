@@ -150,6 +150,14 @@ void ZoomIf::SwitchOff(byte PN, byte Slot) {
 }
 
 
+void ZoomIf::OnManualSwitch(byte Slot, bool State) {
+  if (State)
+    BIT_SET(CurrentEffects, Slot - 1);
+  else
+    BIT_CLR(CurrentEffects, Slot - 1);
+}
+
+
 _zoomPatchType ZoomIf::RequestPatch(byte PN) {
   byte Msg[] = ZOOM_MSG_PATCH_REQUEST;
   
@@ -185,6 +193,26 @@ void ZoomIf::CachePatches() {
         Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
       #endif
     }
+  #endif
+}
+
+
+void ZoomIf::UpdatePatches() {
+  byte PreviousPatch = CurrentPatch;
+  
+  #if ZOOM_SRAM_MEM
+    for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
+    {
+      ZoomIf::Buffer = ZoomIf::RequestPatch(n);
+      ZoomIf::GetPatchEffects(n);
+      ZoomIf::MemStore(n);
+      
+      #if DEBUG
+        Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
+      #endif
+    }
+    
+    ZoomIf::Patch(PreviousPatch);
   #endif
 }
 

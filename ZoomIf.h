@@ -42,9 +42,12 @@ class ZoomIf {
     static void SwitchOn(byte PN, byte Slot);
     static void SwitchOff(byte PN, byte Slot);
     
+    static void OnManualSwitch(byte Slot, bool State);
+    
     static _zoomPatchType RequestPatch(byte PN);
     static void MemStore(byte PN);
     static void CachePatches();
+    static void UpdatePatches();
     static void RestorePatch(byte PN);
     static void SetModified(byte PN);
     
