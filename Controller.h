@@ -5,9 +5,20 @@
 #include "MultistompController.h"
 #include "MidiBuffer.h"
 
-typedef void (*_onReceiveCC) (Stream *, byte, byte, byte);
-typedef void (*_onReceivePC) (Stream *, byte, byte);
-typedef void (*_onReset) (Stream *);
+enum StateMode {
+    None = 0,
+    PatchChange = BIT(0),
+    FocusChange = BIT(1),
+    SetEffects  = BIT(2),
+    SwitchOn    = BIT(3),
+    SwitchOff   = BIT(4),
+    SetParams   = BIT(5),
+    CustomMsg   = BIT(6)
+};
+
+#define ADD_STATE(state, s) state |= s
+#define RST_STATE(state) state = StateMode::None
+
 
 // Controller struct
 class Controller {
@@ -24,23 +35,21 @@ class Controller {
     bool RxActive;  // receiving state
     
     Stream *Com;    // serial port
-    
-    _onReceiveCC OnReceiveCC;
-    _onReceivePC OnReceivePC;
-    _onReset OnReset;
+    StateMode State = StateMode::None; // controller state
     
     Controller();
     
-    void Init(Stream *Com, byte Channel,
-              _onReceiveCC OnReceiveCC,
-              _onReceivePC OnReceivePC,
-              _onReset OnReset);
+    void Init(Stream *Com, byte Channel);
     
     void Update();
     void Reset();
     bool Done();
     
     void OnSend();
+    
+    virtual void OnReceiveCC() {};
+    virtual void OnReceivePC() {};
+    virtual void OnResetCtrl() {};
 };
 
 #endif

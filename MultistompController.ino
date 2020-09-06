@@ -1,15 +1,18 @@
- #include <AltSoftSerial.h>
+#include <AltSoftSerial.h>
 #include <SoftwareSerial.h>
 
 #include "MultistompController.h"
-#include "Controller.h"
+#include "MidiController.h"
 #include "MidiBuffer.h"
 #include "Timer.h"
+#include "ZoomController.h"
 #include "ZoomIf.h"
 
 
 // GLOBALS
-Controller CtrlMIDI, CtrlZoom;
+MidiController CtrlMIDI;
+ZoomController CtrlZoom;
+
 AltSoftSerial  MIDI_STREAM = AltSoftSerial (MIDI_SERIAL_RX, MIDI_SERIAL_TX);
 SoftwareSerial ZOOM_STREAM = SoftwareSerial(ZOOM_SERIAL_RX, ZOOM_SERIAL_TX);
 
@@ -29,8 +32,8 @@ void setup() {
   #endif
   
   // Setup controller streams and callbacks
-  CtrlMIDI.Init(&MIDI_STREAM, MIDI_CHANNEL, &Midi_OnReceiveCC, &Midi_OnReceivePC, &Midi_OnReset);
-  CtrlZoom.Init(&ZOOM_STREAM, ZOOM_CHANNEL, &Zoom_OnReceiveCC, &Zoom_OnReceivePC, &Zoom_OnReset);
+  CtrlMIDI.Init(&MIDI_STREAM, MIDI_CHANNEL);
+  CtrlZoom.Init(&ZOOM_STREAM, ZOOM_CHANNEL);
   ZoomIf::Init(&ZOOM_STREAM, ZOOM_CHANNEL);
 }
 
@@ -59,7 +62,9 @@ void loop() {
   
   // Tuner switch handling
   if ((digitalRead(SWITCH_TUNER) != HIGH) && Timer::Check(SWITCH_DEB)) {
-    ZoomIf::Tuner(true);    // Tuner on message
+    bool TunerState = ZoomIf::TunerState ? false : true;
+    
+    ZoomIf::Tuner(TunerState);
     Timer::Reset();
   }
 

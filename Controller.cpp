@@ -1,4 +1,5 @@
 #include "Arduino.h"
+// #include "IEventHandler.h"
 #include "MultistompController.h"
 #include "Controller.h"
 #include "MidiBuffer.h"
@@ -7,16 +8,10 @@ Controller::Controller() {
   this->Reset();
 }
 
-void Controller::Init(Stream *Com, byte Channel,
-                      _onReceiveCC OnReceiveCC,
-                      _onReceivePC OnReceivePC,
-                      _onReset OnReset)
+void Controller::Init(Stream *Com, byte Channel)
 {
   this->Com = Com;
   this->Channel = Channel;
-  this->OnReceiveCC = OnReceiveCC;
-  this->OnReceivePC = OnReceivePC;
-  this->OnReset     = OnReset;
 }
 
 void Controller::Update() {  
@@ -38,6 +33,8 @@ void Controller::Update() {
 }
 
 void Controller::Reset() {
+  this->OnResetCtrl();
+  
   PN = 0;
   CN = 0;
   CV = 0;
@@ -47,8 +44,6 @@ void Controller::Reset() {
   RxTermCC = 0;
   
   RxActive = true;
-  
-  this->OnReset(Com);
 }
 
 bool Controller::Done() {
@@ -56,6 +51,6 @@ bool Controller::Done() {
 }
 
 void Controller::OnSend() {
-  if (RxNormCC) this->OnReceiveCC(Com, Channel, CN, CV);
-  if (RxPC)     this->OnReceivePC(Com, Channel, PN);
+  if (RxNormCC) this->OnReceiveCC();
+  if (RxPC)     this->OnReceivePC();
 }
