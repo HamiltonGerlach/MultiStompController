@@ -3,6 +3,7 @@
 #include "Array.h"
 #include "MidiOutIf.h"
 #include "MultistompController.h"
+#include "Timer.h"
 #include "ZoomIf.h"
 #include "ZoomMsg.h"
 
@@ -158,7 +159,7 @@ void ZoomIf::OnManualSwitch(byte Slot, bool State) {
 }
 
 
-_zoomPatchType ZoomIf::RequestPatch(byte PN) {
+void ZoomIf::RequestPatch(byte PN) {
   byte Msg[] = ZOOM_MSG_PATCH_REQUEST;
   
   ARRAY_FILL(Buffer.data, ZOOM_PATCH_LENGTH, 0x00); // Reset buffer
@@ -168,8 +169,6 @@ _zoomPatchType ZoomIf::RequestPatch(byte PN) {
   Com->write(Msg, ARRAY_SIZE(Msg));                 // Send patch request
   Com->readBytes(Buffer.data, ZOOM_PATCH_LENGTH);   // Receive patch data
   while(Com->read() >= 0);                          // Flush input buffer
-  
-  return Buffer;
 }
 
 
@@ -185,7 +184,7 @@ void ZoomIf::CachePatches() {
   #if ZOOM_SRAM_MEM
     for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
     {
-      ZoomIf::Buffer = ZoomIf::RequestPatch(n);
+      ZoomIf::RequestPatch(n);
       ZoomIf::GetPatchEffects(n);
       ZoomIf::MemStore(n);
       
@@ -203,7 +202,7 @@ void ZoomIf::UpdatePatches() {
   #if ZOOM_SRAM_MEM
     for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
     {
-      ZoomIf::Buffer = ZoomIf::RequestPatch(n);
+      ZoomIf::RequestPatch(n);
       ZoomIf::GetPatchEffects(n);
       ZoomIf::MemStore(n);
       
@@ -448,8 +447,8 @@ void ZoomIf::LogMem() {
   #if DEBUG
     for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
     {
-      _zoomPatchType PatchTmp = ZoomIf::PatchMem[n];    
-      Serial.write(PatchTmp.data, ZOOM_PATCH_LENGTH);
+      Buffer = ZoomIf::PatchMem[n];    
+      Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
       Serial.println("");
     }
   #endif
@@ -463,3 +462,40 @@ void ZoomIf::LogBuffer() {
   #endif
 }
 
+
+void ZoomIf::HandleInput() {
+  byte Index = 0;
+  
+  if (Com->available()) {
+    Timer::Reset();
+    
+    while ((Index < ZOOM_PATCH_LENGTH)) {
+      ZoomIf::Buffer[Index] = Com->read();
+      
+      if (ZoomIf::Buffer[Index] == 0xFF)
+          continue;
+          
+      if ((ZoomIf::Buffer[Index++] == 0xF7) ||
+          (Timer::Check(ZOOM_MSG_RX_TIMEOUT)))
+          break;
+    }
+    
+    if (Index == ZOOM_PARAM_LENGTH) {         // Disable effect / Param edit
+      #if DEBUG
+        Serial.println(F("Received parameter data."));
+      #endif
+    }
+    else if (Index == ZOOM_PATCH_LENGTH) {   // Enable effect / Send patch
+      #if DEBUG
+        Serial.println(F("Received patch data."));
+      #endif
+    }
+    
+    #if DEBUG
+      Serial.println(Index, DEC);
+      Serial.write(ZoomIf::Buffer.data, Index);
+    #endif
+  
+    while (Com->read() >= 0); // Flush input buffer
+  }
+}

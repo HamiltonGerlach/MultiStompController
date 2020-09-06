@@ -44,7 +44,7 @@ class ZoomIf {
     
     static void OnManualSwitch(byte Slot, bool State);
     
-    static _zoomPatchType RequestPatch(byte PN);
+    static void RequestPatch(byte PN);
     static void MemStore(byte PN);
     static void CachePatches();
     static void UpdatePatches();
@@ -65,6 +65,7 @@ class ZoomIf {
     static void LogMem();
     static void LogBuffer();
     
+    static void HandleInput();
   private:
     ZoomIf();
 };

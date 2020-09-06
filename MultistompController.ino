@@ -68,14 +68,14 @@ void loop() {
     ZoomIf::Tuner(TunerState);
     Timer::Reset();
   }
+  
+
+  // Update switch handling
   if ((digitalRead(SWITCH_UPDATE) != HIGH) && Timer::Check(SWITCH_DEB)) {
     ZoomIf::UpdatePatches();
     Timer::Reset();
   }
-
   
-  // Debug input from Zoom
-  #if DEBUG
-    while (ZOOM_STREAM.available() > 0) Serial.write(ZOOM_STREAM.read());
-  #endif
+  // Handle input from Zoom
+  ZoomIf::HandleInput();
 }

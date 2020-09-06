@@ -20,7 +20,6 @@
 
 #define ZOOM_MSG_UNKNOWN    {0xF0, 0x52, 0x00, Z_ID, 0x60, 0xF7}
 
-
 #define ZOOM_MSG_IDENTITY_REQUEST   {0xF0, 0x7E, 0x00, 0x06, 0x01, 0xF7}
 #define ZOOM_MSG_PATCH_REQUEST      {0xF0, 0x52, 0x00, Z_ID, 0x29, 0xF7}
 #define ZOOM_MSG_IDENTITY_RETURN    {0xF0, 0x7E, 0x00, 0x06, 0x02, 0x52, Z_ID, 0x00, 0x00, 0x00, 0x33, 0x2E, 0x30, 0x30, 0xF7}
@@ -34,10 +33,12 @@
 
 #define ZOOM_INI_DELAY 0
 #define ZOOM_INI_WAIT 1000
+#define ZOOM_MSG_RX_TIMEOUT 2000
 
 #define ZOOM_PATCH_NO 50
 #define ZOOM_PATCH_LENGTH 146
 #define ZOOM_IDENTITY_LENGTH 15
+#define ZOOM_PARAM_LENGTH 10
 
 #define ZOOM_EFF_NO 6
 #define ZOOM_EFF_ON_BIT 0
@@ -56,5 +57,6 @@
 #define TBL_FOCUS_4 2
 #define TBL_FOCUS_5 4
 #define TBL_FOCUS_6 0
+
 
 #endif
