@@ -90,7 +90,7 @@ void ZoomController::OnResetCtrl() {
     Serial.println(Effects, BIN);
     
     byte EffectsCommon = Effects & CV;
-    byte EffectsDiff = EffectsCommon ^ CV;
+    byte EffectsDiff = Effects ^ CV;
     
     Serial.print(F("Common Effects: "));
     Serial.println(EffectsCommon, BIN);
@@ -112,10 +112,13 @@ void ZoomController::OnResetCtrl() {
       if (EffectsDiff != 0)
       {
         for (int i = 0; i < 3; i++) {
-          if (BIT_SET(EffectsDiff, i))
-            ZoomIf::SwitchOn(Patch, i + 1);
-          else
-            ZoomIf::SwitchOff(Patch, i + 1);
+          if (BIT_CHECK(EffectsDiff, i))
+          {
+            if (BIT_CHECK(CV, i))
+              ZoomIf::SwitchOn(Patch, i + 1);
+            else
+              ZoomIf::SwitchOff(Patch, i + 1);
+          }
         }
       }
       
@@ -142,7 +145,7 @@ void ZoomController::OnResetCtrl() {
     }
     else {
       for (int i = 0; i < 3; i++) {
-        if (BIT_SET(Effects, i))
+        if (BIT_CHECK(CV, i))
           ZoomIf::SwitchOn(Patch, i + 1);
       }
       
@@ -169,7 +172,7 @@ void ZoomController::OnResetCtrl() {
     }
     else {
       for (int i = 0; i < 3; i++) {
-        if (BIT_SET(Effects, i))
+        if (BIT_CHECK(CV, i))
           ZoomIf::SwitchOff(Patch, i + 1);
       }
       

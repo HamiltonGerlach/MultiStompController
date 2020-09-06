@@ -39,7 +39,7 @@ void ZoomIf::Init(Stream *Com, byte Channel) {
   while (!IniDone)
   {
     #if DEBUG
-      Serial.println("Init...");
+      Serial.println(F("Init..."));
     #endif
     
     IniDone = ZoomIf::IdentityRequest();
@@ -57,7 +57,7 @@ void ZoomIf::Init(Stream *Com, byte Channel) {
   #endif
   
   #if DEBUG
-    Serial.println("Init done.");
+    Serial.println(F("Init done."));
   #endif
 }
 
@@ -213,6 +213,8 @@ void ZoomIf::UpdatePatches() {
     }
     
     ZoomIf::Patch(PreviousPatch);
+    
+    ARRAY_FILL(PatchModified, ZOOM_SRAM_PATCHES, false);
   #endif
 }
 
@@ -224,7 +226,7 @@ void ZoomIf::RestorePatch(byte PN) {
       if (PatchModified[PN])
       {
         #if DEBUG
-          Serial.print("Restoring... ");
+          Serial.print(F("Restoring... "));
           Serial.println(PN);
         #endif
         
@@ -250,9 +252,11 @@ void ZoomIf::SetModified(byte PN) {
 byte ZoomIf::GetPatchEffects(byte PN) {
   byte State = 0;
   // ZoomIf::Patch(PN); // Select patch
-
-  Serial.print("GetPatchEffects PN ");
-  Serial.println(PN);
+  
+  #if DEBUG
+    Serial.print(F("GetPatchEffects PN "));
+    Serial.println(PN);
+  #endif
 
   // Prepare effect states
   #if ZOOM_SRAM_MEM
@@ -267,17 +271,17 @@ byte ZoomIf::GetPatchEffects(byte PN) {
           BIT_SET(State, i);
 
           #if DEBUG
-            Serial.print("Effect ");
+            Serial.print(F("Effect "));
             Serial.print(i + 1);
-            Serial.println(" is on.");
+            Serial.println(F(" is on."));
           #endif
         }
         else
         {
           #if DEBUG
-            Serial.print("Effect ");
+            Serial.print(F("Effect "));
             Serial.print(i + 1);
-            Serial.println(" is off.");
+            Serial.println(F(" is off."));
           #endif
         }
       }
@@ -441,17 +445,21 @@ _zoomStateVector ZoomIf::StateVector(byte States) {
 
 
 void ZoomIf::LogMem() {
-  for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
-  {
-    _zoomPatchType PatchTmp = ZoomIf::PatchMem[n];    
-    Serial.write(PatchTmp.data, ZOOM_PATCH_LENGTH);
-    Serial.println("");
-  }
+  #if DEBUG
+    for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
+    {
+      _zoomPatchType PatchTmp = ZoomIf::PatchMem[n];    
+      Serial.write(PatchTmp.data, ZOOM_PATCH_LENGTH);
+      Serial.println("");
+    }
+  #endif
 }
 
 
 void ZoomIf::LogBuffer() {
-  Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-  Serial.println("");
+  #if DEBUG
+    Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
+    Serial.println("");
+  #endif
 }
 

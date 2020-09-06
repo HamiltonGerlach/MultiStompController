@@ -9,6 +9,7 @@
 
 #define SWITCH_DEB 1000
 #define SWITCH_TUNER 14
+#define SWITCH_UPDATE 15
 
 #define CONTROL_BYTE 0xFF
 #define CONTROL_FLUSH true

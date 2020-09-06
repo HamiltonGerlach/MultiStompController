@@ -1,8 +1,7 @@
 #include "Arduino.h"
-// #include "IEventHandler.h"
-#include "MultistompController.h"
 #include "Controller.h"
 #include "MidiBuffer.h"
+#include "MultistompController.h"
 
 Controller::Controller() {
   this->Reset();

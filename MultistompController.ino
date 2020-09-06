@@ -20,6 +20,7 @@ SoftwareSerial ZOOM_STREAM = SoftwareSerial(ZOOM_SERIAL_RX, ZOOM_SERIAL_TX);
 // MAIN INIT FUNCTION
 void setup() {
   pinMode(SWITCH_TUNER, INPUT_PULLUP); // Tuner switch
+  pinMode(SWITCH_UPDATE, INPUT_PULLUP); // Update switch
   
   MIDI_STREAM.begin(MIDI_BAUDRATE);    // MIDI In/Out
   MIDI_STREAM.flush();
@@ -65,6 +66,10 @@ void loop() {
     bool TunerState = ZoomIf::TunerState ? false : true;
     
     ZoomIf::Tuner(TunerState);
+    Timer::Reset();
+  }
+  if ((digitalRead(SWITCH_UPDATE) != HIGH) && Timer::Check(SWITCH_DEB)) {
+    ZoomIf::UpdatePatches();
     Timer::Reset();
   }
 
