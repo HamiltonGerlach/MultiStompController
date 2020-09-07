@@ -15,7 +15,7 @@ Resources used:
     https://www.hobbytronics.co.uk/audio-midi/midi-breakout
 
 
-- DPDT momentary switch for tuner control
+- DPDT momentary switches for "Tuner" and "Update Patches" functions
 
 
 Arduino libraries used:
@@ -39,7 +39,9 @@ Wiring instructions:
 
 - Connect MIDI Out on MIDI breakout board to D08 (Pin 11) on Arduino (AltSoftSerial TX).
 
-- Connect DPDT switch to [A0, GND] on Arduino.
+- Connect DPDT "Tuner" switch to [A0, GND] on Arduino.
+
+- Connect DPDT "Update Patches" switch to [A1, GND] on Arduino.
 
 
 
@@ -50,6 +52,18 @@ Connection instructions:
 - Connect MIDI Out to the Strymon Iridium (or other).
 
 - Connect USBHost to the Zoom Multistomp.
+
+
+
+Customization / adaptation notes for other setups:
+
+- MultistompController.ino contains the main program flow.
+
+- MIDI In is collected via a static MidiBuffer, which feeds input to the Controllers.
+
+- The main controller classes MidiController and ZoomController derive from the Controller class and define the output/through logic of the corresponding devices (i.e. how inputs are converted to outputs or passed through).
+
+- These controllers must implement the events OnReceiveCC, OnReceivePC and OnResetCtrl. They may also override the default methods Update, OnSend and Reset.
 
 
 Prototype images:
