@@ -63,9 +63,7 @@ void loop() {
   
   // Tuner switch handling
   if ((digitalRead(SWITCH_TUNER) != HIGH) && Timer::Check(SWITCH_DEB)) {
-    bool TunerState = ZoomIf::TunerState ? false : true;
-    
-    ZoomIf::Tuner(TunerState);
+    ZoomIf::Tuner(ZoomIf::TunerState ? false : true);
     Timer::Reset();
   }
   

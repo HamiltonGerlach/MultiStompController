@@ -469,23 +469,33 @@ void ZoomIf::HandleInput() {
   if (Com->available()) {
     Timer::Reset();
     
+    
+    Serial.println("");
+    Serial.println(CurrentEffects, BIN);
+    
+    
     while ((Index < ZOOM_PATCH_LENGTH)) {
-      ZoomIf::Buffer[Index] = Com->read();
-      
-      if (ZoomIf::Buffer[Index] == 0xFF)
-          continue;
-          
-      if ((ZoomIf::Buffer[Index++] == 0xF7) ||
-          (Timer::Check(ZOOM_MSG_RX_TIMEOUT)))
-          break;
+      Buffer[Index] = Com->read();
+      if (Buffer[Index] == 0xFF) continue;
+      if ((Buffer[Index++] == 0xF7) ||
+          (Timer::Check(ZOOM_MSG_RX_TIMEOUT))) break;
     }
     
     if (Index == ZOOM_PARAM_LENGTH) {         // Disable effect / Param edit
+      if ((Buffer[ZOOM_PARAM_ID_BYTE] == ZOOM_PARAM_ID) &&
+          (Buffer[ZOOM_PARAM_NUMBER_BYTE] == 0x00)      &&
+          (Buffer[ZOOM_PARAM_VALUE_BYTE]  == 0x00))
+      {
+        BIT_CLR(CurrentEffects, Buffer[ZOOM_PARAM_SLOT_BYTE]);
+      }
+      
       #if DEBUG
         Serial.println(F("Received parameter data."));
       #endif
     }
     else if (Index == ZOOM_PATCH_LENGTH) {   // Enable effect / Send patch
+      CurrentEffects = ZoomIf::GetPatchEffects(CurrentPatch);
+      
       #if DEBUG
         Serial.println(F("Received patch data."));
       #endif
@@ -493,9 +503,12 @@ void ZoomIf::HandleInput() {
     
     #if DEBUG
       Serial.println(Index, DEC);
-      Serial.write(ZoomIf::Buffer.data, Index);
+      Serial.write(Buffer.data, Index);
     #endif
-  
+    
+    Serial.println("");
+    Serial.println(CurrentEffects, BIN);
+    
     while (Com->read() >= 0); // Flush input buffer
   }
 }
