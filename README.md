@@ -15,7 +15,7 @@ Resources used:
     https://www.hobbytronics.co.uk/audio-midi/midi-breakout
 
 
-- DPDT momentary switches for "Tuner" and "Update Patches" functions
+- DPDT momentary switches for "Tuner" and "Update Patch" functions
 
 
 Arduino libraries used:
@@ -41,7 +41,7 @@ Wiring instructions:
 
 - Connect DPDT "Tuner" switch to [A0, GND] on Arduino.
 
-- Connect DPDT "Update Patches" switch to [A1, GND] on Arduino.
+- Connect DPDT "Update Patch" switch to [A1, GND] on Arduino.
 
 
 
