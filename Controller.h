@@ -2,23 +2,7 @@
 #define CONTROLLER_H
 
 #include "Arduino.h"
-#include "MultistompController.h"
-#include "MidiBuffer.h"
-
-enum StateMode {
-    None = 0,
-    PatchChange = BIT(0),
-    FocusChange = BIT(1),
-    SetEffects  = BIT(2),
-    SwitchOn    = BIT(3),
-    SwitchOff   = BIT(4),
-    SetParams   = BIT(5),
-    CustomMsg   = BIT(6)
-};
-
-#define ADD_STATE(state, s) state |= s
-#define RST_STATE(state) state = StateMode::None
-
+#include "State.h"
 
 // Controller struct
 class Controller {

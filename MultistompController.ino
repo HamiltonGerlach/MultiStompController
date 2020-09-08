@@ -45,8 +45,7 @@ void loop() {
   while ((MIDI_STREAM.available() > 0) && CtrlMIDI.RxActive) {
     MidiBuffer::Push(MIDI_STREAM.read());
     
-    CtrlMIDI.Update();
-    CtrlZoom.Update();
+    CtrlMIDI.Update(); CtrlZoom.Update();
   }
 
 
@@ -70,7 +69,7 @@ void loop() {
 
   // Update switch handling
   if ((digitalRead(SWITCH_UPDATE) != HIGH) && Timer::Check(SWITCH_DEB)) {
-    ZoomIf::UpdatePatches();
+    ZoomIf::UpdateCurrentPatch();
     Timer::Reset();
   }
   

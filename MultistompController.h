@@ -1,11 +1,25 @@
 #ifndef MULTISTOMPCONTROLLER_H
 #define MULTISTOMPCONTROLLER_H
 
+#include "State.h"
 #include "ZoomMsg.h"
 
 #define DEBUG true
 
 #define Z_ID ZOOM_DEVICE_MS50G
+
+#define EEPROM_ENABLED false
+#define EEPROM_ADDRESS 0x50
+#define EEPROM_CLOCK 400000
+#define EEPROM_PATCH_NO 50
+
+#if EEPROM_ENABLED
+    #define ZOOM_MEM_MODE MemMode::SRAM | MemMode::EEPROM
+#else
+    #define ZOOM_MEM_MODE MemMode::SRAM
+#endif
+
+#define ZOOM_SRAM_PATCHES 4
 
 #define SWITCH_DEB 1000
 #define SWITCH_TUNER 14
@@ -29,27 +43,5 @@
 
 #define ZOOM_SERIAL_RX 3
 #define ZOOM_SERIAL_TX 2
-
-#define ZOOM_SRAM_MEM true
-#define ZOOM_SRAM_PATCHES 5
-
-// Array / bit helper macros
-#define ARRAY_SIZE(array) ((sizeof(array))/(sizeof(array[0])))
-#define ARRAY_FILL(array, len, in) for (int i = 0; i < len; i++) array[i] = in
-
-#define BIT(bit) (1 << bit)
-
-#define BIT_SET(arg, bit) arg |= (1 << bit)
-#define BIT_CLR(arg, bit) arg &= ~(1 << bit)
-#define BIT_FLIP(arg, bit) arg ^= (1 << bit)
-#define BIT_CHECK(arg, bit) ((!!((arg) & (1 << (bit)))) == 1)
-
-#define BITMASK_SET(arg, mask) arg |= mask
-#define BITMASK_CLEAR(arg, mask) arg &= (~mask)
-#define BITMASK_FLIP(arg, mask) arg ^= mask
-#define BITMASK_CHECK_ALL(arg, mask) !~((~(mask)) | (arg))
-#define BITMASK_CHECK_ANY(arg, mask) ((arg) & (mask))
-
-#define rndbool() (((byte)random(0, 2) == 1) ? true : false)
 
 #endif

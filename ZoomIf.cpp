@@ -3,9 +3,14 @@
 #include "Array.h"
 #include "MidiOutIf.h"
 #include "MultistompController.h"
+#include "State.h"
 #include "Timer.h"
 #include "ZoomIf.h"
 #include "ZoomMsg.h"
+
+#if EEPROM_ENABLED
+  #include "FlashMem.h"
+#endif
 
 static Stream           *ZoomIf::Com;
 static byte             ZoomIf::Channel;
@@ -14,12 +19,9 @@ static byte             ZoomIf::CurrentPatch = CONTROL_BYTE;
 static byte             ZoomIf::CurrentFocus = CONTROL_BYTE;
 static byte             ZoomIf::CurrentEffects = 0;
 static _zoomPatchType   ZoomIf::Buffer;
-
-#if ZOOM_SRAM_MEM
-  static _zoomPatchType ZoomIf::PatchMem[ZOOM_SRAM_PATCHES];
-  static bool           ZoomIf::PatchModified[ZOOM_SRAM_PATCHES];
-  static byte           ZoomIf::EffectStates[ZOOM_SRAM_PATCHES];
-#endif
+static _zoomPatchType   ZoomIf::PatchMem[ZOOM_SRAM_PATCHES];
+static bool             ZoomIf::PatchModified[ZOOM_SRAM_PATCHES];
+static byte             ZoomIf::EffectStates[ZOOM_SRAM_PATCHES];
 
 static byte             PatchFxOffsets[ZOOM_EFF_NO] =
                                             {ZOOM_MSG_OFFSET_EFF_ON_1,
@@ -53,9 +55,7 @@ void ZoomIf::Init(Stream *Com, byte Channel) {
   ZoomIf::CachePatches();
   ZoomIf::Patch(0);
   
-  #if ZOOM_SRAM_MEM
-    ARRAY_FILL(PatchModified, ZOOM_SRAM_PATCHES, false);
-  #endif
+  ARRAY_FILL(PatchModified, ZOOM_SRAM_PATCHES, false);
   
   #if DEBUG
     Serial.println(F("Init done."));
@@ -173,78 +173,86 @@ void ZoomIf::RequestPatch(byte PN) {
 
 
 void ZoomIf::MemStore(byte PN) {
-  #if ZOOM_SRAM_MEM
-    if (PN < ZOOM_SRAM_PATCHES)
-      PatchMem[PN] = Buffer;
-  #endif
+  if (PN < ZOOM_SRAM_PATCHES)
+    PatchMem[PN] = Buffer;
 }
 
 
 void ZoomIf::CachePatches() {
-  #if ZOOM_SRAM_MEM
-    for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
-    {
-      ZoomIf::RequestPatch(n);
-      ZoomIf::GetPatchEffects(n);
-      ZoomIf::MemStore(n);
-      
-      #if DEBUG
-        Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
-      #endif
-    }
-  #endif
+  for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
+  {
+    ZoomIf::RequestPatch(n);
+    ZoomIf::GetPatchEffects(n);
+    ZoomIf::MemStore(n);
+    
+    #if DEBUG
+      Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
+    #endif
+  }
 }
 
 
 void ZoomIf::UpdatePatches() {
   byte PreviousPatch = CurrentPatch;
   
-  #if ZOOM_SRAM_MEM
-    for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
-    {
-      ZoomIf::RequestPatch(n);
-      ZoomIf::GetPatchEffects(n);
-      ZoomIf::MemStore(n);
-      
-      #if DEBUG
-        Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
-      #endif
-    }
+  for (int n = 0; n < ZOOM_SRAM_PATCHES; n++)
+  {
+    ZoomIf::RequestPatch(n);
+    ZoomIf::GetPatchEffects(n);
+    ZoomIf::MemStore(n);
     
-    ZoomIf::Patch(PreviousPatch);
+    #if DEBUG
+      Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
+    #endif
+  }
+  
+  ZoomIf::Patch(PreviousPatch);
+  
+  ARRAY_FILL(PatchModified, ZOOM_SRAM_PATCHES, false);
+}
+
+
+void ZoomIf::UpdateCurrentPatch() {  
+  if (CurrentPatch < ZOOM_SRAM_PATCHES)
+  {
+    ZoomIf::RequestPatch(CurrentPatch);
+    ZoomIf::GetPatchEffects(CurrentPatch);
+    ZoomIf::MemStore(CurrentPatch);
     
-    ARRAY_FILL(PatchModified, ZOOM_SRAM_PATCHES, false);
-  #endif
+    #if DEBUG
+      Serial.print("Updating patch ");
+      Serial.println(CurrentPatch);
+      Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
+    #endif
+  }
+  
+  ARRAY_FILL(PatchModified, ZOOM_SRAM_PATCHES, false);
 }
 
 
 void ZoomIf::RestorePatch(byte PN) {
-  #if ZOOM_SRAM_MEM
-    if (PN < ZOOM_SRAM_PATCHES)
+  if (PN < ZOOM_SRAM_PATCHES)
+  {
+    if (PatchModified[PN])
     {
-      if (PatchModified[PN])
-      {
-        #if DEBUG
-          Serial.print(F("Restoring... "));
-          Serial.println(PN);
-        #endif
-        
-        Buffer = ZoomIf::PatchMem[PN];
-        Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
-        
-        PatchModified[PN] = false;
-        
-        CurrentFocus = CONTROL_BYTE;
-      }
+      #if DEBUG
+        Serial.print(F("Restoring... "));
+        Serial.println(PN);
+      #endif
+      
+      Buffer = ZoomIf::PatchMem[PN];
+      Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
+      
+      PatchModified[PN] = false;
+      
+      CurrentFocus = CONTROL_BYTE;
     }
-  #endif
+  }
 }
 
 
 void ZoomIf::SetModified(byte PN) {
-  #if ZOOM_SRAM_MEM
-    if (PN < ZOOM_SRAM_PATCHES) PatchModified[PN] = true;
-  #endif
+  if (PN < ZOOM_SRAM_PATCHES) PatchModified[PN] = true;
 }
 
 
@@ -258,36 +266,34 @@ byte ZoomIf::GetPatchEffects(byte PN) {
   #endif
 
   // Prepare effect states
-  #if ZOOM_SRAM_MEM
-    if (PN < ZOOM_SRAM_PATCHES)
-    {      
-      for (int i = 0; i < ZOOM_EFF_NO; i++)
+  if (PN < ZOOM_SRAM_PATCHES)
+  {      
+    for (int i = 0; i < ZOOM_EFF_NO; i++)
+    {
+      byte TypeByte = Buffer.data[PatchFxOffsets[i]];
+
+      if BIT_CHECK(TypeByte, ZOOM_EFF_ON_BIT)
       {
-        byte TypeByte = Buffer.data[PatchFxOffsets[i]];
+        BIT_SET(State, i);
 
-        if BIT_CHECK(TypeByte, ZOOM_EFF_ON_BIT)
-        {
-          BIT_SET(State, i);
-
-          #if DEBUG
-            Serial.print(F("Effect "));
-            Serial.print(i + 1);
-            Serial.println(F(" is on."));
-          #endif
-        }
-        else
-        {
-          #if DEBUG
-            Serial.print(F("Effect "));
-            Serial.print(i + 1);
-            Serial.println(F(" is off."));
-          #endif
-        }
+        #if DEBUG
+          Serial.print(F("Effect "));
+          Serial.print(i + 1);
+          Serial.println(F(" is on."));
+        #endif
       }
-
-      ZoomIf::EffectStates[PN] = State;
+      else
+      {
+        #if DEBUG
+          Serial.print(F("Effect "));
+          Serial.print(i + 1);
+          Serial.println(F(" is off."));
+        #endif
+      }
     }
-  #endif
+
+    ZoomIf::EffectStates[PN] = State;
+  }
 
   return State;
 }
@@ -299,44 +305,42 @@ void ZoomIf::SetPatchEffects(byte PN, byte Mask) {
   ZoomIf::Patch(PN); // Select patch
   
   // Prepare effect states
-  #if ZOOM_SRAM_MEM
-    if (PN < ZOOM_SRAM_PATCHES)
+  if (PN < ZOOM_SRAM_PATCHES)
+  {
+    Buffer = ZoomIf::PatchMem[PN];
+    
+    #if DEBUG
+      Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
+      Serial.println("");
+    #endif
+    
+    for (int i = 0; i < ZOOM_EFF_NO; i++)
     {
-      Buffer = ZoomIf::PatchMem[PN];
+      byte TypeByte = Buffer.data[PatchFxOffsets[i]];
       
-      #if DEBUG
-        Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-        Serial.println("");
-      #endif
+      if (BIT_CHECK(Mask, i))
+        BIT_SET(TypeByte, ZOOM_EFF_ON_BIT);
+      else
+        BIT_CLR(TypeByte, ZOOM_EFF_ON_BIT);
       
-      for (int i = 0; i < ZOOM_EFF_NO; i++)
-      {
-        byte TypeByte = Buffer.data[PatchFxOffsets[i]];
-        
-        if (BIT_CHECK(Mask, i))
-          BIT_SET(TypeByte, ZOOM_EFF_ON_BIT);
-        else
-          BIT_CLR(TypeByte, ZOOM_EFF_ON_BIT);
-        
-        Buffer.data[PatchFxOffsets[i]] = TypeByte;
-      }
-      
-      if (!(CurrentFocus == CONTROL_BYTE)) 
-        ZoomIf::FocusEffect(CurrentFocus);
-      
-      #if DEBUG
-        Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-        Serial.println("");
-      #endif
-      
-      // Write patch data
-      Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
-      
-      CurrentEffects = Mask;
-      
-      ZoomIf::SetModified(CurrentPatch);
+      Buffer.data[PatchFxOffsets[i]] = TypeByte;
     }
-  #endif
+    
+    if (!(CurrentFocus == CONTROL_BYTE)) 
+      ZoomIf::FocusEffect(CurrentFocus);
+    
+    #if DEBUG
+      Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
+      Serial.println("");
+    #endif
+    
+    // Write patch data
+    Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
+    
+    CurrentEffects = Mask;
+    
+    ZoomIf::SetModified(CurrentPatch);
+  }
 }
 
 
@@ -375,10 +379,8 @@ void ZoomIf::Patch(byte PN) {
     MidiOutIf::PC(Com, Channel, PN);
     CurrentPatch = PN;
     
-    #if ZOOM_SRAM_MEM
-      if (PN < ZOOM_SRAM_PATCHES)
-        CurrentEffects = EffectStates[PN];
-    #endif
+    if (PN < ZOOM_SRAM_PATCHES)
+      CurrentEffects = EffectStates[PN];
   }
 }
 
@@ -391,10 +393,8 @@ void ZoomIf::Patch(byte PN, bool Restore) {
     MidiOutIf::PC(Com, Channel, PN);
     CurrentPatch = PN;
     
-    #if ZOOM_SRAM_MEM
       if (PN < ZOOM_SRAM_PATCHES)
         CurrentEffects = EffectStates[PN];
-    #endif
   }
 }
 
@@ -407,10 +407,8 @@ void ZoomIf::Patch(byte PN, bool Restore, bool Force) {
     MidiOutIf::PC(Com, Channel, PN);
     CurrentPatch = PN;
     
-    #if ZOOM_SRAM_MEM
       if (PN < ZOOM_SRAM_PATCHES)
         CurrentEffects = EffectStates[PN];
-    #endif
   }
 }
 
@@ -469,10 +467,10 @@ void ZoomIf::HandleInput() {
   if (Com->available()) {
     Timer::Reset();
     
-    
-    Serial.println("");
-    Serial.println(CurrentEffects, BIN);
-    
+    #if DEBUG
+      Serial.println("");
+      Serial.println(CurrentEffects, BIN);
+    #endif
     
     while ((Index < ZOOM_PATCH_LENGTH)) {
       Buffer[Index] = Com->read();
@@ -504,10 +502,10 @@ void ZoomIf::HandleInput() {
     #if DEBUG
       Serial.println(Index, DEC);
       Serial.write(Buffer.data, Index);
+      
+      Serial.println("");
+      Serial.println(CurrentEffects, BIN);
     #endif
-    
-    Serial.println("");
-    Serial.println(CurrentEffects, BIN);
     
     while (Com->read() >= 0); // Flush input buffer
   }

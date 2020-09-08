@@ -2,7 +2,6 @@
 #define MIDIBUFFER_H
 
 #include "Arduino.h"
-#include "MultistompController.h"
 
 // Midi buffer
 class MidiBuffer {

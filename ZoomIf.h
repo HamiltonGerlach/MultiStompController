@@ -3,7 +3,6 @@
 
 #include "Arduino.h"
 #include "Array.h"
-#include "MultistompController.h"
 #include "ZoomMsg.h"
 
 typedef Array<byte, ZOOM_PATCH_LENGTH>    _zoomPatchType;
@@ -23,12 +22,9 @@ class ZoomIf {
     static byte CurrentFocus;
     static byte CurrentEffects;
     static _zoomPatchType Buffer;
-    
-    #if ZOOM_SRAM_MEM
-      static _zoomPatchType PatchMem[ZOOM_SRAM_PATCHES];
-      static bool PatchModified[ZOOM_SRAM_PATCHES];
-      static byte EffectStates[ZOOM_SRAM_PATCHES];
-    #endif
+    static _zoomPatchType PatchMem[ZOOM_SRAM_PATCHES];
+    static bool PatchModified[ZOOM_SRAM_PATCHES];
+    static byte EffectStates[ZOOM_SRAM_PATCHES];
     
     static void Init(Stream *Com, byte Channel);
     static bool IdentityRequest();
@@ -48,6 +44,7 @@ class ZoomIf {
     static void MemStore(byte PN);
     static void CachePatches();
     static void UpdatePatches();
+    static void UpdateCurrentPatch();
     static void RestorePatch(byte PN);
     static void SetModified(byte PN);
     
@@ -66,8 +63,10 @@ class ZoomIf {
     static void LogBuffer();
     
     static void HandleInput();
+    
   private:
     ZoomIf();
+    ~ZoomIf();
 };
 
 #endif

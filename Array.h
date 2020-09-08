@@ -1,6 +1,9 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
+#define ARRAY_SIZE(array) ((sizeof(array))/(sizeof(array[0])))
+#define ARRAY_FILL(array, len, in) for (int i = 0; i < len; i++) array[i] = in
+
 template <class T, size_t N>
 struct Array {
     // Storage
