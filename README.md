@@ -76,6 +76,9 @@ Prototype images:
 
 ![Overview 1](https://github.com/HamiltonGerlach/MultiStompController/blob/master/doc/images/Overview1.jpg)
 ![Overview 2](https://github.com/HamiltonGerlach/MultiStompController/blob/master/doc/images/Overview2.jpg)
+
+**Function table:**
+
 ![Functions](https://github.com/HamiltonGerlach/MultiStompController/blob/master/doc/images/Functions.png)
 
 
