@@ -1,6 +1,7 @@
 **MultiStompController** - a compact MIDI converter that receives MIDI data from the MOEN GEC5 loop switcher (or other MIDI sources) and translates it into separate MIDI outputs for the Zoom MS-50G Multistomp (via MIDI-USB) and the Strymon Iridium or any other MIDI device (via MIDI-EXP).
 
 
+
 Resources used:
 
 - Arduino Nano v4 compatible
@@ -45,6 +46,7 @@ Wiring instructions:
 
 
 
+
 Connection instructions:
 
 - Connect MIDI In to the MOEN GEC5 loop switcher (or other).
@@ -52,6 +54,9 @@ Connection instructions:
 - Connect MIDI Out to the Strymon Iridium (or other).
 
 - Connect USBHost to the Zoom Multistomp.
+
+
+
 
 
 
@@ -66,11 +71,12 @@ Customization / adaptation notes for other setups:
 - These controllers must implement the events OnReceiveCC, OnReceivePC and OnResetCtrl. They may also override the default methods Update, OnSend and Reset.
 
 
+
 Prototype images:
 
 ![Overview 1](https://github.com/HamiltonGerlach/MultiStompController/blob/master/doc/images/Overview1.jpg)
 ![Overview 2](https://github.com/HamiltonGerlach/MultiStompController/blob/master/doc/images/Overview2.jpg)
-
+![Functions](https://github.com/HamiltonGerlach/MultiStompController/blob/master/doc/images/Functions.png)
 
 
 Thanks to g200kg whose work on https://github.com/g200kg/zoom-ms-utility inspired this project.
