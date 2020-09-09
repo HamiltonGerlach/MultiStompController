@@ -2,85 +2,24 @@
 #include "Array.h"
 #include "FlashMem.h"
 #include <Wire.h>
+#include <extEEPROM.h>
 
-static int FlashMem::DeviceAddress = 0x50;
-static unsigned long FlashMem::Clock = 100000;
+static extEEPROM FlashMem::Mem(kbits_256, 1, 64);
 
-
-void FlashMem::Init(int DeviceAddress, unsigned long Clock) {
-  Wire.begin();
-  
-  FlashMem::DeviceAddress = DeviceAddress;
-  FlashMem::Clock = Clock;
-  
-  Wire.setClock(Clock);
-}
-
-byte FlashMem::ReadByte(unsigned int MemAddress) {
-  byte Data = 0xFF;
- 
-  Wire.beginTransmission(DeviceAddress);
-  Wire.write((int)(MemAddress >> 8));   // MSB
-  Wire.write((int)(MemAddress & 0xFF)); // LSB
-  Wire.endTransmission();
- 
-  Wire.requestFrom(DeviceAddress, 1);
- 
-  if (Wire.available()) Data = Wire.read();
- 
-  return Data;
+void FlashMem::Init() {
+  Mem.begin(extEEPROM::twiClock400kHz);
 }
 
 
-void FlashMem::WriteByte(unsigned int MemAddress, byte Data) {
-  Wire.beginTransmission(DeviceAddress);
-  Wire.write((int)(MemAddress >> 8));   // MSB
-  Wire.write((int)(MemAddress & 0xFF)); // LSB
-  Wire.write(Data);
-  Wire.endTransmission();
-  
-  delay(5);
-}
-
-
-_bufferType FlashMem::ReadBuffer(unsigned int MemAddress) {
+_bufferType FlashMem::Read(unsigned int MemAddress) {
   _bufferType Out;
-  byte Index = 0;
-  
-  ARRAY_FILL(Out, BUFFER_SIZE, 0xFF);
-  
-  unsigned long t = micros();
-  
-  Wire.beginTransmission(DeviceAddress);
-  Wire.write((int)(MemAddress >> 8));   // MSB
-  Wire.write((int)(MemAddress & 0xFF)); // LSB
-  Wire.endTransmission();
- 
-  Wire.requestFrom(DeviceAddress, BUFFER_SIZE);
- 
-  while (Index < BUFFER_SIZE)
-  {
-    if (Wire.available()) Out[Index++] = Wire.read();
-  }
-  
-  Serial.println(micros() - t);
+  ARRAY_FILL(Out, BUFFER_SIZE, 0x00);
+  Mem.read(MemAddress, Out.data, BUFFER_SIZE);
   
   return Out;
 }
 
 
-void FlashMem::WriteBuffer(unsigned int MemAddress, _bufferType Data) {
-  unsigned long t = micros();
-  
-  Wire.beginTransmission(DeviceAddress);
-  Wire.write((int)(MemAddress >> 8));   // MSB
-  Wire.write((int)(MemAddress & 0xFF)); // LSB
-  Wire.write(Data.data, BUFFER_SIZE);
-  Wire.endTransmission();
-  
-  Serial.println(micros() - t);
-  
-  delay(5);
+void FlashMem::Write(unsigned int MemAddress, _bufferType Buffer) {
+  Mem.write(MemAddress, Buffer.data, BUFFER_SIZE);
 }
-
-

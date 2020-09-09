@@ -22,9 +22,23 @@ class ZoomIf {
     static byte CurrentFocus;
     static byte CurrentEffects;
     static _zoomPatchType Buffer;
-    static _zoomPatchType PatchMem[ZOOM_SRAM_PATCHES];
-    static bool PatchModified[ZOOM_SRAM_PATCHES];
-    static byte EffectStates[ZOOM_SRAM_PATCHES];
+    
+    #if EEPROM_ENABLED
+    #else
+      static _zoomPatchType PatchMem[SRAM_PATCH_NUM];
+    #endif
+    
+    #if EEPROM_ENABLED
+      static bool PatchModified[EEPROM_PATCH_NUM];
+    #else
+      static bool PatchModified[SRAM_PATCH_NUM];
+    #endif
+    
+    #if EEPROM_ENABLED
+      static byte EffectStates[EEPROM_PATCH_NUM];
+    #else
+      static byte EffectStates[SRAM_PATCH_NUM];
+    #endif
     
     static void Init(Stream *Com, byte Channel);
     static bool IdentityRequest();
@@ -63,6 +77,15 @@ class ZoomIf {
     static void LogBuffer();
     
     static void HandleInput();
+    
+    #if EEPROM_ENABLED
+      static void FlashWrite(unsigned int Address);
+      static void FlashRead(unsigned int Address);
+      static unsigned int FlashPatchAddress(byte PN);
+    #endif
+    
+    static void EmptyPatch();
+    static void ReadPatch(byte PN);
     
   private:
     ZoomIf();

@@ -4,23 +4,20 @@
 #include "Arduino.h"
 #include "Array.h"
 #include <Wire.h>
+#include <extEEPROM.h>
 
-#define BUFFER_SIZE 30
+#define BUFFER_SIZE 10
 
 typedef Array<byte, BUFFER_SIZE> _bufferType;
 
 class FlashMem {
     public:
-        static int DeviceAddress;
-        static unsigned long Clock;
+        static extEEPROM Mem;
         
-        static void Init(int DeviceAddress, unsigned long Clock);
+        static void Init();
         
-        static byte ReadByte(unsigned int MemAddress);
-        static void WriteByte(unsigned int MemAddress, byte Data);
-        
-        static _bufferType ReadBuffer(unsigned int MemAddress);
-        static void WriteBuffer(unsigned int MemAddress, _bufferType Data);
+        static _bufferType Read(unsigned int MemAddress);
+        static void Write(unsigned int MemAddress, _bufferType Data);
 };
 
 #endif

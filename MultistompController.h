@@ -4,22 +4,22 @@
 #include "State.h"
 #include "ZoomMsg.h"
 
-#define DEBUG true
-
-#define Z_ID ZOOM_DEVICE_MS50G
-
-#define EEPROM_ENABLED false
-#define EEPROM_ADDRESS 0x50
-#define EEPROM_CLOCK 400000
-#define EEPROM_PATCH_NO 50
+// MAIN CONFIG
+#define DEBUG true                  // serial debug flag, set to false for normal operation
+#define Z_ID ZOOM_DEVICE_MS50G      // set to ZOOM_DEVICE_MS70CDR
+                                          // (ZOOM_DEVICE_MS60B not implemented yet)
+#define EEPROM_ENABLED true         // set to false if only using internal RAM
+//
 
 #if EEPROM_ENABLED
-    #define ZOOM_MEM_MODE MemMode::SRAM | MemMode::EEPROM
+    #define EEPROM_ADDRESS 0x50
+    #define EEPROM_CLOCK 400000
+    #define EEPROM_PATCH_NUM 8
+    #define MEM_PATCH_NUM EEPROM_PATCH_NUM
 #else
-    #define ZOOM_MEM_MODE MemMode::SRAM
+    #define SRAM_PATCH_NUM 4
+    #define MEM_PATCH_NUM SRAM_PATCH_NUM
 #endif
-
-#define ZOOM_SRAM_PATCHES 4
 
 #define SWITCH_DEB 1000
 #define SWITCH_TUNER 14
