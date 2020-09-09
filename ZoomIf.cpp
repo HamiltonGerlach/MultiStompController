@@ -8,11 +8,6 @@
 #include "ZoomIf.h"
 #include "ZoomMsg.h"
 
-#if EEPROM_ENABLED
-  #include "FlashMem.h"
-  #include "MemMap.h"
-#endif
-
 static Stream           *ZoomIf::Com;
 static byte             ZoomIf::Channel;
 static bool             ZoomIf::TunerState = false;
@@ -22,21 +17,14 @@ static byte             ZoomIf::CurrentEffects = 0;
 static _zoomPatchType   ZoomIf::Buffer;
 
 #if EEPROM_ENABLED
+  #include "FlashMem.h"
+  #include "MemMap.h"
 #else
   static _zoomPatchType ZoomIf::PatchMem[SRAM_PATCH_NUM];
 #endif
 
-#if EEPROM_ENABLED
-  static bool           ZoomIf::PatchModified[EEPROM_PATCH_NUM];
-#else
-  static bool           ZoomIf::PatchModified[SRAM_PATCH_NUM];
-#endif
-
-#if EEPROM_ENABLED
-  static byte           ZoomIf::EffectStates[EEPROM_PATCH_NUM];
-#else
-  static byte           ZoomIf::EffectStates[SRAM_PATCH_NUM];
-#endif
+static bool             ZoomIf::PatchModified[MEM_PATCH_NUM];
+static byte             ZoomIf::EffectStates[MEM_PATCH_NUM];
 
 static byte             PatchFxOffsets[ZOOM_EFF_NO] =
                                             {ZOOM_MSG_OFFSET_EFF_ON_1,
