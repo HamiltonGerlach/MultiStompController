@@ -19,11 +19,15 @@ Resources used:
 - DPDT momentary switches for "Tuner" and "Update Patch" functions
 
 
+- 24LC256 (32kb EEPROM) - optional, for flash memory storage of patches
+
+
 Arduino libraries used:
 - AltSoftSerial (https://www.pjrc.com/teensy/td_libs_AltSoftSerial.html)
 
 - SoftwareSerial
 
+- EEPROMext (optional, for flash memory storage of patches)
 
 
 Wiring instructions:
@@ -44,7 +48,11 @@ Wiring instructions:
 
 - Connect DPDT "Update Patch" switch to [A1, GND] on Arduino.
 
+Optional, for flash memory storage of patches: 
 
+- Connect [5V, GND] on 24LC256 to [5V, GND] on Arduino.
+
+- Connect [SDA, SCL] on 24LC256 to [SDA, SCL] on Arduino (see https://www.lehelmatyus.com/691/sda-scl-arduino-nano-connecting-i2c-devices-arduino-nano).
 
 
 Connection instructions:
