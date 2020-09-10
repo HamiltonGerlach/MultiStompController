@@ -52,7 +52,7 @@ Optional, for flash memory storage of patches:
 
 - Connect [5V, GND] on 24LC256 to [5V, GND] on Arduino.
 
-- Connect [SDA, SCL] on 24LC256 to [SDA, SCL] on Arduino (see https://www.lehelmatyus.com/691/sda-scl-arduino-nano-connecting-i2c-devices-arduino-nano).
+- Connect [SDA, SCL] on 24LC256 to [SDA, SCL] on Arduino (see https://www.lehelmatyus.com/691/sda-scl-arduino-nano-connecting-i2c-devices-arduino-nano and further https://www.hobbytronics.co.uk/tutorials-code/arduino-tutorials/arduino-external-eeprom).
 
 
 Connection instructions:
