@@ -14,7 +14,24 @@
 
 #define PARAM_NUM 9
 
-// Patch parameter map:    [Effect][Param][Bit of param value][Offset/Index]
+// Patch parameter map:
+//  [Effect]        ... 0 - 5
+//  [Param]         ... 0 - 8
+//  [Bit of value]  ... 0 - 11
+//  [Offset/Index]  ... 0 (Offset), 1 (Bit index)
+
+// Access via pgm_read_byte_near(&ParamMap[i][j][k][l])
+
+byte ParamLength[PARAM_NUM] = { PARAM_LENGTH_P0,
+                                PARAM_LENGTH_P1,
+                                PARAM_LENGTH_P2,
+                                PARAM_LENGTH_P3,                                
+                                PARAM_LENGTH_P4,
+                                PARAM_LENGTH_P5,
+                                PARAM_LENGTH_P6,
+                                PARAM_LENGTH_P7,
+                                PARAM_LENGTH_P8 };
+
 const PROGMEM byte ParamMap[ZOOM_EFF_NO][PARAM_NUM][PARAM_LENGTH_MAX][2] =
 {
     { // EFFECT 0

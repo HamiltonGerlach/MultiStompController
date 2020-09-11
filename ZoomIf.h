@@ -72,6 +72,9 @@ class ZoomIf {
     static void EmptyPatch();
     static void ReadPatch(byte PN);
     
+    static int GetParam(byte Effect, byte Parameter);
+    static void SetParam(byte Effect, byte Parameter, int Value);
+    
   private:
     ZoomIf();
     ~ZoomIf();

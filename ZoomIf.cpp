@@ -561,3 +561,40 @@ void ZoomIf::ReadPatch(byte PN) {
     Buffer = ZoomIf::PatchMem[PN];
   #endif
 }
+
+
+int ZoomIf::GetParam(byte Effect, byte Parameter) {
+  int Out = 0, Offset, Index;
+  
+  for (int i = 0; i < ParamLength[Parameter]; i++)
+  {
+    Offset = pgm_read_byte_near(&ParamMap[Effect][Parameter][i][0]);
+    Index  = pgm_read_byte_near(&ParamMap[Effect][Parameter][i][1]);
+    
+    byte PatchByte = Buffer[Offset];
+    
+    if (BIT_CHECK(PatchByte, Index)) BIT_SET(Out, i);
+  }
+  
+  return Out;
+}
+
+
+void ZoomIf::SetParam(byte Effect, byte Parameter, int Value) {
+  int Offset, Index;
+  
+  for (int i = 0; i < ParamLength[Parameter]; i++)
+  {
+    Offset = pgm_read_byte_near(&ParamMap[Effect][Parameter][i][0]);
+    Index  = pgm_read_byte_near(&ParamMap[Effect][Parameter][i][1]);
+    
+    byte PatchByte = Buffer[Offset];
+    
+    if (BIT_CHECK(Value, i))
+      BIT_SET(PatchByte, Index);
+    else
+      BIT_CLR(PatchByte, Index);
+    
+    Buffer[Offset] = PatchByte; 
+  }
+}
