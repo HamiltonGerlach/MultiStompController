@@ -255,8 +255,7 @@ void ZoomIf::RestorePatch(byte PN) {
       #endif
       
       ZoomIf::ReadPatch(PN);
-      
-      Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
+      ZoomIf::SendPatch();
       
       PatchModified[PN] = false;
       
@@ -314,7 +313,7 @@ byte ZoomIf::GetPatchEffects(byte PN) {
 }
 
 
-void ZoomIf::SetPatchEffects(byte PN, byte Mask) {
+void ZoomIf::SetPatchEffects(byte PN, byte Mask, bool Send = false) {
   bool State[ZOOM_EFF_NO];
   
   ZoomIf::Patch(PN); // Select patch
@@ -350,7 +349,7 @@ void ZoomIf::SetPatchEffects(byte PN, byte Mask) {
     #endif
     
     // Write patch data
-    Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
+    if (Send) SendPatch();
     
     CurrentEffects = Mask;
     
@@ -388,33 +387,7 @@ void ZoomIf::FocusEffect(byte Effect) {
 }
 
 
-void ZoomIf::Patch(byte PN) {
-  if (PN != CurrentPatch)
-  {
-    MidiOutIf::PC(Com, Channel, PN);
-    CurrentPatch = PN;
-    
-    if (PN < MEM_PATCH_NUM)
-      CurrentEffects = EffectStates[PN];
-  }
-}
-
-
-void ZoomIf::Patch(byte PN, bool Restore) {
-  if (PN != CurrentPatch)
-  {
-    if (Restore) ZoomIf::RestorePatch(CurrentPatch);
-    
-    MidiOutIf::PC(Com, Channel, PN);
-    CurrentPatch = PN;
-    
-    if (PN < MEM_PATCH_NUM)
-      CurrentEffects = EffectStates[PN];
-  }
-}
-
-
-void ZoomIf::Patch(byte PN, bool Restore, bool Force) {
+void ZoomIf::Patch(byte PN, bool Restore = false, bool Force = false) {
   if ((PN != CurrentPatch) || (Force))
   {
     if (Restore) ZoomIf::RestorePatch(CurrentPatch);
@@ -563,8 +536,15 @@ void ZoomIf::ReadPatch(byte PN) {
 }
 
 
+void ZoomIf::SendPatch() {
+  Com->write(Buffer.data, ZOOM_PATCH_LENGTH);
+}
+
+
 int ZoomIf::GetParam(byte Effect, byte Parameter) {
   int Out = 0, Offset, Index;
+  
+  Effect -= 1; Parameter -=1;
   
   for (int i = 0; i < ParamLength[Parameter]; i++)
   {
@@ -582,6 +562,8 @@ int ZoomIf::GetParam(byte Effect, byte Parameter) {
 
 void ZoomIf::SetParam(byte Effect, byte Parameter, int Value) {
   int Offset, Index;
+  
+  Effect -= 1; Parameter -=1;
   
   for (int i = 0; i < ParamLength[Parameter]; i++)
   {

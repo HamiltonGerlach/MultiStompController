@@ -51,12 +51,10 @@ class ZoomIf {
     static void SetModified(byte PN);
     
     static byte GetPatchEffects(byte PN);
-    static void SetPatchEffects(byte PN, byte Mask);
+    static void SetPatchEffects(byte PN, byte Mask, bool Send = false);
     static void FocusEffect(byte Effect);
     
-    static void Patch(byte PN);
-    static void Patch(byte PN, bool Restore);
-    static void Patch(byte PN, bool Restore, bool Force);
+    static void Patch(byte PN, bool Restore = false, bool Force = false);
     
     static void LogMem();
     static void LogBuffer();
@@ -71,6 +69,7 @@ class ZoomIf {
     
     static void EmptyPatch();
     static void ReadPatch(byte PN);
+    static void SendPatch();
     
     static int GetParam(byte Effect, byte Parameter);
     static void SetParam(byte Effect, byte Parameter, int Value);

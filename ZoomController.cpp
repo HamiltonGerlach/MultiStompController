@@ -102,7 +102,7 @@ void ZoomController::OnResetCtrl() {
         BIT_CHECK(EffectsDiff, 4) ||
         BIT_CHECK(EffectsDiff, 5))
     {
-      ZoomIf::SetPatchEffects(Patch, CV);
+      ZoomIf::SetPatchEffects(Patch, CV, true);
       
       #if DEBUG
         Serial.println(F("SetPatchEffects"));
@@ -137,7 +137,7 @@ void ZoomController::OnResetCtrl() {
     
     if (BIT_CHECK(CV, 3) || BIT_CHECK(CV, 4) || BIT_CHECK(CV, 5)) {
       BITMASK_SET(Effects, CV);
-      ZoomIf::SetPatchEffects(Patch, Effects);
+      ZoomIf::SetPatchEffects(Patch, Effects, true);
       
       #if DEBUG
         Serial.println(F("SetPatchEffects"));
@@ -164,7 +164,7 @@ void ZoomController::OnResetCtrl() {
     
     if (BIT_CHECK(CV, 3) || BIT_CHECK(CV, 4) || BIT_CHECK(CV, 5)) {
       BITMASK_CLEAR(Effects, CV);
-      ZoomIf::SetPatchEffects(Patch, Effects);
+      ZoomIf::SetPatchEffects(Patch, Effects, true);
       
       #if DEBUG
         Serial.println(F("SetPatchEffects"));
