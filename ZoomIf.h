@@ -9,8 +9,6 @@ typedef Array<byte, ZOOM_PATCH_LENGTH>    _zoomPatchType;
 typedef Array<byte, ZOOM_IDENTITY_LENGTH> _zoomIdType;
 typedef Array<bool, ZOOM_EFF_NO>          _zoomStateVector;
 
-const byte FocusTable[ZOOM_EFF_NO] = {TBL_FOCUS_1, TBL_FOCUS_2, TBL_FOCUS_3,
-                                      TBL_FOCUS_4, TBL_FOCUS_5, TBL_FOCUS_6};
 
 // Zoom interface class
 class ZoomIf {
@@ -23,22 +21,12 @@ class ZoomIf {
     static byte CurrentEffects;
     static _zoomPatchType Buffer;
     
-    #if EEPROM_ENABLED
-    #else
+    #if !EEPROM_ENABLED
       static _zoomPatchType PatchMem[SRAM_PATCH_NUM];
     #endif
     
-    #if EEPROM_ENABLED
-      static bool PatchModified[EEPROM_PATCH_NUM];
-    #else
-      static bool PatchModified[SRAM_PATCH_NUM];
-    #endif
-    
-    #if EEPROM_ENABLED
-      static byte EffectStates[EEPROM_PATCH_NUM];
-    #else
-      static byte EffectStates[SRAM_PATCH_NUM];
-    #endif
+    static bool PatchModified[MEM_PATCH_NUM];
+    static byte EffectStates[MEM_PATCH_NUM];
     
     static void Init(Stream *Com, byte Channel);
     static bool IdentityRequest();
@@ -69,9 +57,6 @@ class ZoomIf {
     static void Patch(byte PN);
     static void Patch(byte PN, bool Restore);
     static void Patch(byte PN, bool Restore, bool Force);
-    
-    static byte StateMask(_zoomStateVector States);
-    static _zoomStateVector StateVector(byte States);
     
     static void LogMem();
     static void LogBuffer();

@@ -3,6 +3,8 @@
 #include "Array.h"
 #include "MidiOutIf.h"
 #include "MultistompController.h"
+#include "PatchMap.h"
+#include "ParamMap.h"
 #include "State.h"
 #include "Timer.h"
 #include "ZoomIf.h"
@@ -25,14 +27,6 @@ static _zoomPatchType   ZoomIf::Buffer;
 
 static bool             ZoomIf::PatchModified[MEM_PATCH_NUM];
 static byte             ZoomIf::EffectStates[MEM_PATCH_NUM];
-
-static byte             PatchFxOffsets[ZOOM_EFF_NO] =
-                                            {ZOOM_MSG_OFFSET_EFF_ON_1,
-                                             ZOOM_MSG_OFFSET_EFF_ON_2,
-                                             ZOOM_MSG_OFFSET_EFF_ON_3,
-                                             ZOOM_MSG_OFFSET_EFF_ON_4,
-                                             ZOOM_MSG_OFFSET_EFF_ON_5,
-                                             ZOOM_MSG_OFFSET_EFF_ON_6};
 
 
 void ZoomIf::Init(Stream *Com, byte Channel) {
@@ -369,28 +363,28 @@ void ZoomIf::FocusEffect(byte Effect) {
   byte Focus = FocusTable[Effect];
   byte b0, b1, b2;
   
-  b0 = Buffer.data[ZOOM_EFF_FOCUS_BIT_0_OFFSET];
-  b1 = Buffer.data[ZOOM_EFF_FOCUS_BIT_1_OFFSET];
-  b2 = Buffer.data[ZOOM_EFF_FOCUS_BIT_2_OFFSET];
+  b0 = Buffer.data[ZOOM_PATCH_OFFSET_FOCUS_BIT_0];
+  b1 = Buffer.data[ZOOM_PATCH_OFFSET_FOCUS_BIT_1];
+  b2 = Buffer.data[ZOOM_PATCH_OFFSET_FOCUS_BIT_2];
   
   if BIT_CHECK(Focus, 0)
-    BIT_SET(b0, ZOOM_EFF_FOCUS_BIT_0_INDEX);
+    BIT_SET(b0, ZOOM_PATCH_INDEX_FOCUS_BIT_0);
   else
-    BIT_CLR(b0, ZOOM_EFF_FOCUS_BIT_0_INDEX);
+    BIT_CLR(b0, ZOOM_PATCH_INDEX_FOCUS_BIT_0);
     
   if BIT_CHECK(Focus, 1)
-    BIT_SET(b1, ZOOM_EFF_FOCUS_BIT_1_INDEX);
+    BIT_SET(b1, ZOOM_PATCH_INDEX_FOCUS_BIT_1);
   else
-    BIT_CLR(b1, ZOOM_EFF_FOCUS_BIT_1_INDEX);
+    BIT_CLR(b1, ZOOM_PATCH_INDEX_FOCUS_BIT_1);
     
   if BIT_CHECK(Focus, 2)
-    BIT_SET(b2, ZOOM_EFF_FOCUS_BIT_2_INDEX);
+    BIT_SET(b2, ZOOM_PATCH_INDEX_FOCUS_BIT_2);
   else
-    BIT_CLR(b2, ZOOM_EFF_FOCUS_BIT_2_INDEX);
+    BIT_CLR(b2, ZOOM_PATCH_INDEX_FOCUS_BIT_2);
   
-  Buffer.data[ZOOM_EFF_FOCUS_BIT_0_OFFSET] = b0;
-  Buffer.data[ZOOM_EFF_FOCUS_BIT_1_OFFSET] = b1;
-  Buffer.data[ZOOM_EFF_FOCUS_BIT_2_OFFSET] = b2;
+  Buffer.data[ZOOM_PATCH_OFFSET_FOCUS_BIT_0] = b0;
+  Buffer.data[ZOOM_PATCH_OFFSET_FOCUS_BIT_1] = b1;
+  Buffer.data[ZOOM_PATCH_OFFSET_FOCUS_BIT_2] = b2;
 }
 
 
@@ -431,29 +425,6 @@ void ZoomIf::Patch(byte PN, bool Restore, bool Force) {
     if (PN < MEM_PATCH_NUM)
       CurrentEffects = EffectStates[PN];
   }
-}
-
-
-byte ZoomIf::StateMask(_zoomStateVector States) {
-  byte Out = 0;
-
-  for (int i = 0; i < ZOOM_EFF_NO; i++) {
-    if (States[i]) BIT_SET(Out, i);
-  }
-
-  return Out;
-}
-
-
-_zoomStateVector ZoomIf::StateVector(byte States) {
-  _zoomStateVector Out;
-  ARRAY_FILL(Out.data, ZOOM_EFF_NO, false);
-
-  for (int i = 0; i < ZOOM_EFF_NO; i++) {
-    if (BIT_CHECK(States, i)) Out[i] = true; 
-  }
-
-  return Out;
 }
 
 
@@ -546,6 +517,7 @@ void ZoomIf::HandleInput() {
     }
     
     #if DEBUG
+      Serial.println("");
       Serial.print("TOTAL BYTES WRITTEN: ");
       Serial.println(Counter, DEC);
       Serial.print("ADDRESS: ");

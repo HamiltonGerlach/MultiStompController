@@ -14,7 +14,7 @@
 #if EEPROM_ENABLED
     #define EEPROM_ADDRESS 0x50
     #define EEPROM_CLOCK 400000
-    #define EEPROM_PATCH_NUM 8
+    #define EEPROM_PATCH_NUM 50
     #define MEM_PATCH_NUM EEPROM_PATCH_NUM
 #else
     #define SRAM_PATCH_NUM 4

@@ -1,3 +1,6 @@
+#ifndef MEMMAP_H
+#define MEMMAP_H
+
 #include "Arduino.h"
 
 const PROGMEM unsigned int MEM_ADDR_PATCH[ZOOM_PATCH_NO] =
@@ -53,3 +56,5 @@ const PROGMEM unsigned int MEM_ADDR_PATCH[ZOOM_PATCH_NO] =
     9700,
     9900,
   };
+  
+  #endif

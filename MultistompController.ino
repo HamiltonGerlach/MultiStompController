@@ -29,7 +29,7 @@ void setup() {
   ZOOM_STREAM.flush();
 
   #if DEBUG
-    Serial.begin(DEBUG_BAUDRATE);        // Debug Out
+    Serial.begin(DEBUG_BAUDRATE);      // Debug Out
   #endif
   
   // Setup controller streams and callbacks
