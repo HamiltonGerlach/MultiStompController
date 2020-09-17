@@ -19,7 +19,6 @@ class Controller {
     bool RxActive;  // receiving state
     
     Stream *Com;    // serial port
-    StateMode State = StateMode::None; // controller state
     
     Controller();
     
@@ -35,5 +34,7 @@ class Controller {
     virtual void OnReceivePC() {};
     virtual void OnResetCtrl() {};
 };
+
+typedef byte(*_customMsg)(Controller*, byte, byte, byte);
 
 #endif

@@ -14,7 +14,7 @@
 #if EEPROM_ENABLED
     #define EEPROM_ADDRESS 0x50
     #define EEPROM_CLOCK 400000
-    #define EEPROM_PATCH_NUM 50
+    #define EEPROM_PATCH_NUM 10
     #define MEM_PATCH_NUM EEPROM_PATCH_NUM
 #else
     #define SRAM_PATCH_NUM 4
@@ -35,13 +35,13 @@
 #define MIDI_STREAM MIDI_S
 #define MIDI_CHANNEL 2
 
-#define MIDI_SERIAL_RX 12
-#define MIDI_SERIAL_TX 11
-
 #define ZOOM_STREAM ZOOM_S
 #define ZOOM_CHANNEL 1
 
 #define ZOOM_SERIAL_RX 3
 #define ZOOM_SERIAL_TX 2
+
+#define MIDI_SERIAL_RX 12
+#define MIDI_SERIAL_TX 11
 
 #endif

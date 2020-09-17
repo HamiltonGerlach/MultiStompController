@@ -21,12 +21,16 @@ class ZoomIf {
     static byte CurrentEffects;
     static _zoomPatchType Buffer;
     
-    #if !EEPROM_ENABLED
-      static _zoomPatchType PatchMem[SRAM_PATCH_NUM];
-    #endif
-    
     static bool PatchModified[MEM_PATCH_NUM];
     static byte EffectStates[MEM_PATCH_NUM];
+    
+    #if !EEPROM_ENABLED
+      static _zoomPatchType PatchMem[SRAM_PATCH_NUM];
+    #else
+      static void FlashWrite(unsigned int Address);
+      static void FlashRead(unsigned int Address);
+      static unsigned int FlashPatchAddress(byte PN);
+    #endif
     
     static void Init(Stream *Com, byte Channel);
     static bool IdentityRequest();
@@ -60,12 +64,6 @@ class ZoomIf {
     static void LogBuffer();
     
     static void HandleInput();
-    
-    #if EEPROM_ENABLED
-      static void FlashWrite(unsigned int Address);
-      static void FlashRead(unsigned int Address);
-      static unsigned int FlashPatchAddress(byte PN);
-    #endif
     
     static void EmptyPatch();
     static void ReadPatch(byte PN);

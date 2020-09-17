@@ -8,16 +8,17 @@
 void ZoomController::OnReceiveCC() {
   #if DEBUG
     LogCC('R', Channel, CN, CV);
-  #endif  
+  #endif
   
-  if (CN == 1) {        // Toggle effects on (CV -> bitmask)
-    ADD_STATE(State, StateMode::SetEffects);
+  
+  if (CN == ZOOM_CN_EFFECT_SET) {      // Toggle effects on (CV -> bitmask)
+    ADD_STATE(State, Zoom::StateMode::SetEffects);
   }
-  else if (CN == 2) {   // Toggle effects on (CV -> bitmask)
-    ADD_STATE(State, StateMode::SwitchOn);
+  else if (CN == ZOOM_CN_EFFECT_ON) {  // Toggle effects on (CV -> bitmask)
+    ADD_STATE(State, Zoom::StateMode::SwitchOn);
   }
-  else if (CN == 3) {   // Toggle effects off (CV -> bitmask)
-    ADD_STATE(State, StateMode::SwitchOff);
+  else if (CN == ZOOM_CN_EFFECT_OFF) { // Toggle effects off (CV -> bitmask)
+    ADD_STATE(State, Zoom::StateMode::SwitchOff);
   }
 }
 
@@ -27,22 +28,27 @@ void ZoomController::OnReceivePC() {
     LogPC('R', Channel, PN);
   #endif
   
-  if (PN < 50) {                        // Patch change
-    ADD_STATE(State, StateMode::PatchChange);
+  
+  if (PN < ZOOM_PN_PATCH_TH) {          // Patch change
+    ADD_STATE(State, Zoom::StateMode::PatchChange);
   }
-  else if ((PN >= 51) && (PN <= 56)) {  // Effect focus 1-6
+  else if ((PN >= 51) &&
+           (PN <= 56)) {                // Effect focus 1-6
     ZoomIf::CurrentFocus = PN - 50;
   
-    ADD_STATE(State, StateMode::FocusChange);
+    ADD_STATE(State, Zoom::StateMode::FocusChange);
   }
-  else if ((PN >= 61) && (PN <= 119)) { // Param edit 1-9 (Slot = PN mod 10)
+  else if ((PN >= 61) &&
+           (PN <= 119)) {               // Param edit 1-9 (Slot = PN mod 10)
     Param = PN % 10;
     ParamSlot = floor((PN - 60) / 10);
   
-    ADD_STATE(State, StateMode::SetParams);
+    ADD_STATE(State, Zoom::StateMode::SetParams);
   }
-  else {                                // Custom messages / Reserved  
-    ADD_STATE(State, StateMode::CustomMsg);
+  else if ((PN >= 120) && (PN <= 127)) { // Custom messages / Reserved  
+    CustomMsgIdx = PN - 120;
+    
+    ADD_STATE(State, Zoom::StateMode::CustomMsg);
   }
 }
 
@@ -57,7 +63,7 @@ void ZoomController::OnResetCtrl() {
   #endif
   
   
-  if (State & StateMode::PatchChange) {
+  if (State & Zoom::StateMode::PatchChange) {
     if (PN != Patch)
     {
       Patch = PN;
@@ -71,7 +77,7 @@ void ZoomController::OnResetCtrl() {
   
   
   
-  if (State & StateMode::FocusChange) {
+  if (State & Zoom::StateMode::FocusChange) {
     //not_implemented();
     
     #if DEBUG
@@ -81,7 +87,7 @@ void ZoomController::OnResetCtrl() {
   
   
   
-  if (State & StateMode::SetEffects) {
+  if (State & Zoom::StateMode::SetEffects) {
     #if DEBUG
       Serial.println(F("SetEffects"));
     #endif
@@ -89,18 +95,18 @@ void ZoomController::OnResetCtrl() {
     Serial.print(F("Current Effects: "));
     Serial.println(Effects, BIN);
     
-    byte EffectsCommon = Effects & CV;
-    byte EffectsDiff = Effects ^ CV;
+    byte EffectsShared = Effects & CV;
+    byte EffectsDelta = Effects ^ CV;
     
     Serial.print(F("Common Effects: "));
-    Serial.println(EffectsCommon, BIN);
+    Serial.println(EffectsShared, BIN);
     
     Serial.print(F("Diff Effects: "));
-    Serial.println(EffectsDiff, BIN);
+    Serial.println(EffectsDelta, BIN);
     
-    if (BIT_CHECK(EffectsDiff, 3) ||
-        BIT_CHECK(EffectsDiff, 4) ||
-        BIT_CHECK(EffectsDiff, 5))
+    if (BIT_CHECK(EffectsDelta, 3) ||
+        BIT_CHECK(EffectsDelta, 4) ||
+        BIT_CHECK(EffectsDelta, 5))
     {
       ZoomIf::SetPatchEffects(Patch, CV, true);
       
@@ -109,11 +115,10 @@ void ZoomController::OnResetCtrl() {
       #endif
     }
     else {
-      if (EffectsDiff != 0)
+      if (EffectsDelta != 0)
       {
         for (int i = 0; i < 3; i++) {
-          if (BIT_CHECK(EffectsDiff, i))
-          {
+          if (BIT_CHECK(EffectsDelta, i)) {
             if (BIT_CHECK(CV, i))
               ZoomIf::SwitchOn(Patch, i + 1);
             else
@@ -130,7 +135,7 @@ void ZoomController::OnResetCtrl() {
   
   
   
-  if (State & StateMode::SwitchOn) {
+  if (State & Zoom::StateMode::SwitchOn) {
     #if DEBUG
       Serial.println(F("SwitchOn"));
     #endif
@@ -157,7 +162,7 @@ void ZoomController::OnResetCtrl() {
   
   
   
-  if (State & StateMode::SwitchOff) {
+  if (State & Zoom::StateMode::SwitchOff) {
     #if DEBUG
       Serial.println(F("SwitchOff"));
     #endif
@@ -184,9 +189,9 @@ void ZoomController::OnResetCtrl() {
   
   
   
-  if (State & StateMode::CustomMsg) // Set effects via bitmask CV
-  {
-    //not_implemented();
+  if (State & Zoom::StateMode::CustomMsg) {
+    if (CustomMessage[CustomMsgIdx] != 0)
+      CustomMessage[CustomMsgIdx](this, PN, CN, CV);
     
     #if DEBUG
       Serial.println(F("CustomMsg"));

@@ -45,7 +45,7 @@ void loop() {
   while ((MIDI_STREAM.available() > 0) && CtrlMIDI.RxActive) {
     MidiBuffer::Push(MIDI_STREAM.read());
     
-    CtrlMIDI.Update(); CtrlZoom.Update();
+    CtrlMIDI.Update();  CtrlZoom.Update();
   }
 
 
@@ -53,8 +53,8 @@ void loop() {
   if (CtrlMIDI.Done() && CtrlZoom.Done()) {
     ZoomIf::Tuner(false);     // Tuner off message
     
-    CtrlMIDI.OnSend(); CtrlZoom.OnSend();
-    CtrlMIDI.Reset();  CtrlZoom.Reset();
+    CtrlMIDI.OnSend();  CtrlZoom.OnSend();
+    CtrlMIDI.Reset();   CtrlZoom.Reset();
     
     MidiBuffer::Flush();
   }
