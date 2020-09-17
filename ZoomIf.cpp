@@ -39,6 +39,7 @@ void ZoomIf::Init(Stream *Com, byte Channel) {
   
   delay(ZOOM_INI_DELAY);
   
+  byte Counter = 0;
   bool IniDone = false;
   while (!IniDone)
   {
@@ -50,11 +51,15 @@ void ZoomIf::Init(Stream *Com, byte Channel) {
     if (IniDone) break;
     
     delay(ZOOM_INI_WAIT);
+    
+    if (Counter++ > 10) break;
   }
   
-  ZoomIf::ParamEnable();
-  ZoomIf::CachePatches();
-  ZoomIf::Patch(0);
+  if (IniDone) {
+    ZoomIf::ParamEnable();
+    ZoomIf::CachePatches();
+    ZoomIf::Patch(0);
+  }
   
   #if DEBUG
     Serial.println(F("Init done."));

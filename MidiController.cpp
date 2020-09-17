@@ -12,7 +12,7 @@ void MidiController::OnReceiveCC() {
   if (CN == 0) {
     ADD_STATE(State, Iridium::StateMode::ManualMode);
   }
-  else if (CN < IRIDIUM_CN_TBL_LEN) {
+  else if (CN <= IRIDIUM_CN_TBL_LEN) {
     ADD_STATE(State, Iridium::StateMode::ParamChange);
   }
 }
@@ -56,7 +56,7 @@ void MidiController::OnResetCtrl() {
     
     #if DEBUG
       Serial.println(F("ParamChange"));
-      Serial.print(ParamCN); Serial.print(" "); Serial.println(CV);
+      Serial.print(ParamCN, DEC); Serial.print(" "); Serial.println(CV, DEC);
     #endif
   }
   
@@ -71,9 +71,9 @@ void MidiController::OnResetCtrl() {
   
   
   if (State & Iridium::StateMode::CustomMsg) {
-    if (CustomMessage[CustomMsgIdx] != 0)
+    if (CustomMessage[CustomMsgIdx] != NULL)
       CustomMessage[CustomMsgIdx](this, PN, CN, CV);
-    
+  
     #if DEBUG
       Serial.println(F("CustomMsg"));
     #endif

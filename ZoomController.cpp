@@ -190,9 +190,9 @@ void ZoomController::OnResetCtrl() {
   
   
   if (State & Zoom::StateMode::CustomMsg) {
-    if (CustomMessage[CustomMsgIdx] != 0)
+    if (CustomMessage[CustomMsgIdx] != NULL)
       CustomMessage[CustomMsgIdx](this, PN, CN, CV);
-    
+  
     #if DEBUG
       Serial.println(F("CustomMsg"));
     #endif
