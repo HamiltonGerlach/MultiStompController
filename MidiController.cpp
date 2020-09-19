@@ -9,7 +9,7 @@ void MidiController::OnReceiveCC() {
     LogCC('R', Channel, CN, CV);
   #endif
   
-  if (CN == 0) {
+  if (CN == 127) {
     ADD_STATE(State, Iridium::StateMode::ManualMode);
   }
   else if (CN <= IRIDIUM_CN_TBL_LEN) {
@@ -56,7 +56,6 @@ void MidiController::OnResetCtrl() {
     
     #if DEBUG
       Serial.println(F("ParamChange"));
-      Serial.print(ParamCN, DEC); Serial.print(" "); Serial.println(CV, DEC);
     #endif
   }
   

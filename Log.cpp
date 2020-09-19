@@ -10,9 +10,9 @@ void LogCC(char Direction, byte Channel, byte CN, byte CV) {
   Serial.print(F("X: Channel "));
   Serial.print(Channel, DEC);
   Serial.print(F(" CC "));
-  Serial.print(CN, HEX);
+  Serial.print(CN, DEC);
   Serial.print(" ");
-  Serial.println(CV, HEX);
+  Serial.println(CV, DEC);
 }
 
 void LogPC(char Direction, byte Channel, byte PN) {
@@ -21,5 +21,5 @@ void LogPC(char Direction, byte Channel, byte PN) {
   Serial.print(F("X: Channel "));
   Serial.print(Channel, DEC);
   Serial.print(F(" PC "));
-  Serial.println(PN, HEX);
+  Serial.println(PN, DEC);
 }

@@ -433,7 +433,7 @@ void ZoomIf::HandleInput() {
     Timer::Reset();
     
     #if DEBUG
-      Serial.println("");
+      Serial.println("CurrentEffects: ");
       Serial.println(CurrentEffects, BIN);
     #endif
     
@@ -463,12 +463,19 @@ void ZoomIf::HandleInput() {
         Serial.println(F("Received patch data."));
       #endif
     }
+    else if ((Index == ZOOM_SAVE_PATCH_LENGTH) &&
+            (Buffer[ZOOM_SAVE_BYTE] == ZOOM_SAVE_ID)) { 
+      // Receive patch save message
+      #if DEBUG
+        Serial.println(F("Received patch save."));
+      #endif
+    }
+    
     
     #if DEBUG
-      Serial.println(Index, DEC);
       Serial.write(Buffer.data, Index);
-      
       Serial.println("");
+      Serial.println("CurrentEffects mod: ");
       Serial.println(CurrentEffects, BIN);
     #endif
     
