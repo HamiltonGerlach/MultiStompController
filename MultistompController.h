@@ -5,7 +5,7 @@
 #include "ZoomMsg.h"
 
 // MAIN CONFIG
-#define DEBUG true                  // serial debug flag, set to false for normal operation
+#define DEBUG false                  // serial debug flag, set to false for normal operation
 #define Z_ID ZOOM_DEVICE_MS50G      // set to ZOOM_DEVICE_MS70CDR
                                           // (ZOOM_DEVICE_MS60B not implemented yet)
 #define EEPROM_ENABLED true         // set to false if only using internal RAM
@@ -43,5 +43,7 @@
 
 #define MIDI_SERIAL_RX 12
 #define MIDI_SERIAL_TX 11
+
+#define ZOOM_INIT_TIMEOUT 10
 
 #endif

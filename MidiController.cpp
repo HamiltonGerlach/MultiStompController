@@ -42,9 +42,7 @@ void MidiController::OnResetCtrl() {
       Param.Patch = PN;
       MidiOutIf::PC(Com, Channel, PN);
       
-      #if DEBUG
-        Serial.println(F("PatchChange"));
-      #endif
+      DPRINTLNF("PatchChange");
     }
   }
   
@@ -54,18 +52,14 @@ void MidiController::OnResetCtrl() {
     
     MidiOutIf::CC(Com, Channel, ParamCN, CV);
     
-    #if DEBUG
-      Serial.println(F("ParamChange"));
-    #endif
+    DPRINTLNF("ParamChange");
   }
   
   
   if (State & Iridium::StateMode::ManualMode) {
     MidiOutIf::PC(Com, Channel, IRIDIUM_PN_MANUAL_MODE);
     
-    #if DEBUG
-      Serial.println(F("ManualMode"));
-    #endif
+    DPRINTLNF("ManualMode");
   }
   
   
@@ -73,9 +67,7 @@ void MidiController::OnResetCtrl() {
     if (CustomMessage[CustomMsgIdx] != NULL)
       CustomMessage[CustomMsgIdx](this, PN, CN, CV);
   
-    #if DEBUG
-      Serial.println(F("CustomMsg"));
-    #endif
+    DPRINTLNF("CustomMsg");
   }
   
   

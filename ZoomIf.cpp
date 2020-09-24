@@ -1,6 +1,7 @@
 // ZOOM SYSTEM MESSAGES
 #include "Arduino.h"
 #include "Array.h"
+#include "Log.h"
 #include "MidiOutIf.h"
 #include "MultistompController.h"
 #include "PatchMap.h"
@@ -43,27 +44,26 @@ void ZoomIf::Init(Stream *Com, byte Channel) {
   bool IniDone = false;
   while (!IniDone)
   {
-    #if DEBUG
-      Serial.println(F("Init..."));
-    #endif
+    DPRINTLNF("Init...");
     
     IniDone = ZoomIf::IdentityRequest();
     if (IniDone) break;
     
     delay(ZOOM_INI_WAIT);
     
-    if (Counter++ > 10) break;
+    if (Counter++ > ZOOM_INIT_TIMEOUT) break;
   }
   
   if (IniDone) {
     ZoomIf::ParamEnable();
     ZoomIf::CachePatches();
     ZoomIf::Patch(0);
+    
+    DPRINTLNF("Init done.");
   }
-  
-  #if DEBUG
-    Serial.println(F("Init done."));
-  #endif
+  else {
+    DPRINTLNF("Init timeout.");
+  }
 }
 
 
@@ -181,10 +181,8 @@ void ZoomIf::MemStore(byte PN) {
     if (PN < EEPROM_PATCH_NUM) {
       unsigned int Address = FlashPatchAddress(PN);
       
-      #if DEBUG
-        Serial.print("STORE PATCH "); Serial.print(PN);
-        Serial.print(" AT ADDRESS "); Serial.print(Address);
-      #endif
+      DPRINT("STORE PATCH "); DPRINT(PN);
+      DPRINT(" AT ADDRESS "); DPRINT(Address);
       
       ZoomIf::FlashWrite(Address);
     }
@@ -202,9 +200,7 @@ void ZoomIf::CachePatches() {
     ZoomIf::GetPatchEffects(n);
     ZoomIf::MemStore(n);
     
-    #if DEBUG
-      Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
-    #endif
+    DWRITE(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
   }
   
   ARRAY_FILL(PatchModified, MEM_PATCH_NUM, false);
@@ -220,9 +216,7 @@ void ZoomIf::UpdatePatches() {
     ZoomIf::GetPatchEffects(n);
     ZoomIf::MemStore(n);
     
-    #if DEBUG
-      Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
-    #endif
+    DWRITE(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
   }
   
   ZoomIf::Patch(PreviousPatch);
@@ -238,11 +232,9 @@ void ZoomIf::UpdateCurrentPatch() {
     ZoomIf::GetPatchEffects(CurrentPatch);
     ZoomIf::MemStore(CurrentPatch);
     
-    #if DEBUG
-      Serial.print("Updating patch ");
-      Serial.println(CurrentPatch);
-      Serial.write(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
-    #endif
+    DPRINT("Updating patch ");
+    DPRINTLN(CurrentPatch);
+    DWRITE(ZoomIf::Buffer.data, ZOOM_PATCH_LENGTH);
     
     PatchModified[CurrentPatch] = false;
   }
@@ -254,10 +246,8 @@ void ZoomIf::RestorePatch(byte PN) {
   {
     if (PatchModified[PN])
     {
-      #if DEBUG
-        Serial.print(F("Restoring... "));
-        Serial.println(PN);
-      #endif
+      DPRINTF("Restoring... ");
+      DPRINTLN(PN);
       
       ZoomIf::ReadPatch(PN);
       ZoomIf::SendPatch();
@@ -279,10 +269,8 @@ byte ZoomIf::GetPatchEffects(byte PN) {
   byte State = 0;
   // ZoomIf::Patch(PN); // Select patch
   
-  #if DEBUG
-    Serial.print(F("GetPatchEffects PN "));
-    Serial.println(PN);
-  #endif
+  DPRINTF("GetPatchEffects PN ");
+  DPRINTLN(PN);
   
   // Prepare effect states
   if (PN < MEM_PATCH_NUM)
@@ -295,19 +283,15 @@ byte ZoomIf::GetPatchEffects(byte PN) {
       {
         BIT_SET(State, i);
 
-        #if DEBUG
-          Serial.print(F("Effect "));
-          Serial.print(i + 1);
-          Serial.println(F(" is on."));
-        #endif
+        DPRINTF("Effect ");
+        DPRINT(i + 1, DEC);
+        DPRINTLNF(" is on.");
       }
       else
       {
-        #if DEBUG
-          Serial.print(F("Effect "));
-          Serial.print(i + 1);
-          Serial.println(F(" is off."));
-        #endif
+        DPRINTF("Effect ");
+        DPRINT(i + 1, DEC);
+        DPRINTLNF(" is off.");
       }
     }
 
@@ -328,10 +312,8 @@ void ZoomIf::SetPatchEffects(byte PN, byte Mask, bool Send = false) {
   {
     ZoomIf::ReadPatch(PN);
     
-    #if DEBUG
-      Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-      Serial.println("");
-    #endif
+    DWRITE(Buffer.data, ZOOM_PATCH_LENGTH);
+    DPRINTLN("");
     
     for (int i = 0; i < ZOOM_EFF_NO; i++)
     {
@@ -348,10 +330,8 @@ void ZoomIf::SetPatchEffects(byte PN, byte Mask, bool Send = false) {
     if (!(CurrentFocus == CONTROL_BYTE)) 
       ZoomIf::FocusEffect(CurrentFocus);
     
-    #if DEBUG
-      Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-      Serial.println("");
-    #endif
+    DWRITE(Buffer.data, ZOOM_PATCH_LENGTH);
+    DPRINTLN("");
     
     // Write patch data
     if (Send) SendPatch();
@@ -411,18 +391,16 @@ void ZoomIf::LogMem() {
     for (int n = 0; n < MEM_PATCH_NUM; n++)
     {
       ZoomIf::ReadPatch(n);
-      Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-      Serial.println("");
+      DWRITE(Buffer.data, ZOOM_PATCH_LENGTH);
+      DPRINTLN("");
     }
   #endif
 }
 
 
 void ZoomIf::LogBuffer() {
-  #if DEBUG
-    Serial.write(Buffer.data, ZOOM_PATCH_LENGTH);
-    Serial.println("");
-  #endif
+  DWRITE(Buffer.data, ZOOM_PATCH_LENGTH);
+  DPRINTLN("");
 }
 
 
@@ -432,10 +410,8 @@ void ZoomIf::HandleInput() {
   if (Com->available()) {
     Timer::Reset();
     
-    #if DEBUG
-      Serial.println("CurrentEffects: ");
-      Serial.println(CurrentEffects, BIN);
-    #endif
+    DPRINTLNF("CurrentEffects: ");
+    DPRINTLN(CurrentEffects, BIN);
     
     while ((Index < ZOOM_PATCH_LENGTH)) {
       Buffer[Index] = Com->read();
@@ -452,32 +428,24 @@ void ZoomIf::HandleInput() {
         BIT_CLR(CurrentEffects, Buffer[ZOOM_PARAM_SLOT_BYTE]);
       }
       
-      #if DEBUG
-        Serial.println(F("Received parameter data."));
-      #endif
+      DPRINTLNF("Received parameter data.");
     }
     else if (Index == ZOOM_PATCH_LENGTH) {   // Enable effect / Send patch
       CurrentEffects = ZoomIf::GetPatchEffects(CurrentPatch);
       
-      #if DEBUG
-        Serial.println(F("Received patch data."));
-      #endif
+      DPRINTLNF("Received patch data.");
     }
     else if ((Index == ZOOM_SAVE_PATCH_LENGTH) &&
             (Buffer[ZOOM_SAVE_BYTE] == ZOOM_SAVE_ID)) { 
       // Receive patch save message
-      #if DEBUG
-        Serial.println(F("Received patch save."));
-      #endif
+      DPRINTLNF("Received patch save.");
     }
     
     
-    #if DEBUG
-      Serial.write(Buffer.data, Index);
-      Serial.println("");
-      Serial.println("CurrentEffects mod: ");
-      Serial.println(CurrentEffects, BIN);
-    #endif
+    DWRITE(Buffer.data, Index);
+    DPRINTLN("");
+    DPRINTLNF("CurrentEffects mod: ");
+    DPRINTLN(CurrentEffects, BIN);
     
     while (Com->read() >= 0); // Flush input buffer
   }
@@ -501,13 +469,11 @@ void ZoomIf::HandleInput() {
       }
     }
     
-    #if DEBUG
-      Serial.println("");
-      Serial.print("TOTAL BYTES WRITTEN: ");
-      Serial.println(Counter, DEC);
-      Serial.print("ADDRESS: ");
-      Serial.println(Address, DEC);
-    #endif
+    DPRINTLN("");
+    DPRINTF("TOTAL BYTES WRITTEN: ");
+    DPRINTLN(Counter, DEC);
+    DPRINTF("ADDRESS: ");
+    DPRINTLN(Address, DEC);
   }
 
 
@@ -536,10 +502,8 @@ void ZoomIf::ReadPatch(byte PN) {
   #if EEPROM_ENABLED
     unsigned int Address = FlashPatchAddress(PN);
     
-    #if DEBUG
-      Serial.print("READ PATCH "); Serial.print(PN);
-      Serial.print(" FROM ADDRESS "); Serial.print(Address);
-    #endif
+    DPRINTF("READ PATCH "); DPRINT(PN, DEC);
+    DPRINTF(" FROM ADDRESS "); DPRINT(Address, DEC);
     
     ZoomIf::FlashRead(Address);
   #else
