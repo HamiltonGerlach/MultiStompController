@@ -3,6 +3,7 @@
 
 #include "Controller.h"
 #include "MultistompController.h"
+#include "Timer.h"
 
 #define IRIDIUM_CN_TBL_LEN      8
 #define IRIDIUM_CN_VOLUME       7
@@ -17,6 +18,9 @@
 #define IRIDIUM_PN_MANUAL_MODE  127
 
 #define IRIDIUM_CUSTOM_MSG_NUM  10
+
+#define IRIDIUM_RAMP_GRAD_MS    100
+#define IRIDIUM_RAMP_GATE_MS    10
 
 
 namespace Iridium {
@@ -60,6 +64,13 @@ namespace Iridium {
 
 class MidiController : public Controller
 {
+private:
+    Timer Clock, Gate;
+    
+    byte ValueStart, ValueEnd, ValueCurrent, ValuePrev;
+    byte RampParameter, RampDirection;
+    bool IsRamping;
+        
 public:
     byte CustomMsgIdx;
     
@@ -72,6 +83,10 @@ public:
     void OnReceiveCC();
     void OnReceivePC();
     void OnResetCtrl();
+    
+    void Invoke();
+    
+    MidiController();
 };
 
 #endif

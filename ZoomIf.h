@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 #include "Array.h"
+#include "Timer.h"
 #include "ZoomMsg.h"
 
 typedef Array<byte, ZOOM_PATCH_LENGTH>    _zoomPatchType;
@@ -13,6 +14,7 @@ typedef Array<bool, ZOOM_EFF_NO>          _zoomStateVector;
 // Zoom interface class
 class ZoomIf {
   public:
+    static Timer Clock;
     static Stream *Com;
     static byte Channel;
     static bool TunerState;

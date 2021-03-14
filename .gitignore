@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+libraries/AltSoftSerial/
+
+libraries/extEEPROM/
+
+libraries/

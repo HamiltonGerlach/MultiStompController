@@ -1,8 +1,6 @@
 #include "Arduino.h"
 #include "Timer.h"
 
-static unsigned long Timer::TimerStart, Timer::TimerCurrent;
-
 Timer::Timer() {
   TimerStart = millis();
 }

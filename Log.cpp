@@ -1,25 +1,25 @@
 #include "Arduino.h"
 #include "Log.h"
 
-void Log(byte x)    { Serial.write(x); }
-void Log(int x)     { Serial.write(x); }
+void Log(byte x)    { DWRITE(x); }
+void Log(int x)     { DWRITE(x); }
 
 void LogCC(char Direction, byte Channel, byte CN, byte CV) {
-  Serial.println("");
-  Serial.print(Direction);
-  Serial.print(F("X: Channel "));
-  Serial.print(Channel, DEC);
-  Serial.print(F(" CC "));
-  Serial.print(CN, DEC);
-  Serial.print(" ");
-  Serial.println(CV, DEC);
+  DPRINTLN("");
+  DPRINT(Direction);
+  DPRINTF("X: Channel ");
+  DPRINT(Channel, DEC);
+  DPRINTF(" CC ");
+  DPRINT(CN, DEC);
+  DPRINT(" ");
+  DPRINTLN(CV, DEC);
 }
 
 void LogPC(char Direction, byte Channel, byte PN) {
-  Serial.println("");
-  Serial.print(Direction);
-  Serial.print(F("X: Channel "));
-  Serial.print(Channel, DEC);
-  Serial.print(F(" PC "));
-  Serial.println(PN, DEC);
+  DPRINTLN("");
+  DPRINT(Direction);
+  DPRINTF("X: Channel ");
+  DPRINT(Channel, DEC);
+  DPRINTF(" PC ");
+  DPRINTLN(PN, DEC);
 }

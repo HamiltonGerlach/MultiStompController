@@ -1,11 +1,14 @@
 #ifndef MULTISTOMPCONTROLLER_H
 #define MULTISTOMPCONTROLLER_H
 
+#include <AltSoftSerial.h>
+#include <SoftwareSerial.h>
+
 #include "State.h"
 #include "ZoomMsg.h"
 
 // MAIN CONFIG
-#define DEBUG false                  // serial debug flag, set to false for normal operation
+#define DEBUG true                  // serial debug flag, set to false for normal operation
 #define Z_ID ZOOM_DEVICE_MS50G      // set to ZOOM_DEVICE_MS70CDR
                                           // (ZOOM_DEVICE_MS60B not implemented yet)
 #define EEPROM_ENABLED true         // set to false if only using internal RAM
@@ -34,9 +37,11 @@
 
 #define MIDI_STREAM MIDI_S
 #define MIDI_CHANNEL 2
+#define MIDI_SERIAL AltSoftSerial
 
 #define ZOOM_STREAM ZOOM_S
 #define ZOOM_CHANNEL 1
+#define ZOOM_SERIAL SoftwareSerial
 
 #define ZOOM_SERIAL_RX 3
 #define ZOOM_SERIAL_TX 2
@@ -44,6 +49,6 @@
 #define MIDI_SERIAL_RX 12
 #define MIDI_SERIAL_TX 11
 
-#define ZOOM_INIT_TIMEOUT 10
+#define ZOOM_INIT_TIMEOUT 1
 
 #endif

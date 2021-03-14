@@ -1,7 +1,6 @@
-#include <AltSoftSerial.h>
-#include <SoftwareSerial.h>
-
 #include "MultistompController.h"
+
+#include "Log.h"
 #include "MidiController.h"
 #include "MidiBuffer.h"
 #include "Timer.h"
@@ -10,11 +9,13 @@
 
 
 // GLOBALS
+Timer Clock;
+
 MidiController CtrlMIDI;
 ZoomController CtrlZoom;
 
-AltSoftSerial  MIDI_STREAM = AltSoftSerial (MIDI_SERIAL_RX, MIDI_SERIAL_TX);
-SoftwareSerial ZOOM_STREAM = SoftwareSerial(ZOOM_SERIAL_RX, ZOOM_SERIAL_TX);
+MIDI_SERIAL MIDI_STREAM = MIDI_SERIAL(MIDI_SERIAL_RX, MIDI_SERIAL_TX);
+ZOOM_SERIAL ZOOM_STREAM = ZOOM_SERIAL(ZOOM_SERIAL_RX, ZOOM_SERIAL_TX);
 
 
 // MAIN INIT FUNCTION
@@ -28,9 +29,7 @@ void setup() {
   ZOOM_STREAM.begin(ZOOM_BAUDRATE);    // USB Host MIDI Out
   ZOOM_STREAM.flush();
 
-  #if DEBUG
-    Serial.begin(DEBUG_BAUDRATE);      // Debug Out
-  #endif
+  DBEGIN(DEBUG_BAUDRATE);              // Debug Out
   
   // Setup controller streams and callbacks
   CtrlMIDI.Init(&MIDI_STREAM, MIDI_CHANNEL);
@@ -61,18 +60,21 @@ void loop() {
 
   
   // Tuner switch handling
-  if ((digitalRead(SWITCH_TUNER) != HIGH) && Timer::Check(SWITCH_DEB)) {
+  if ((digitalRead(SWITCH_TUNER) != HIGH) && Clock.Check(SWITCH_DEB)) {
     ZoomIf::Tuner(ZoomIf::TunerState ? false : true);
-    Timer::Reset();
+    Clock.Reset();
   }
   
 
   // Update switch handling
-  if ((digitalRead(SWITCH_UPDATE) != HIGH) && Timer::Check(SWITCH_DEB)) {
+  if ((digitalRead(SWITCH_UPDATE) != HIGH) && Clock.Check(SWITCH_DEB)) {
     ZoomIf::UpdateCurrentPatch();
-    Timer::Reset();
+    Clock.Reset();
   }
   
   // Handle input from Zoom
   ZoomIf::HandleInput();
+  
+  // Invoke Iridium custom messages
+  CtrlMIDI.Invoke();
 }

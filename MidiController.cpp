@@ -1,8 +1,20 @@
+#include "Arduino.h"
 #include "Controller.h"
 #include "MidiController.h"
 #include "MidiOutIf.h"
 #include "Log.h"
+#include "Timer.h"
 
+
+MidiController::MidiController() {
+  ValueStart = 0;
+  ValueEnd = 0;
+  ValueCurrent = 0;
+  ValuePrev = 0;
+  
+  RampParameter = IRIDIUM_CN_EXPRESSION;
+  IsRamping = false;
+}
 
 void MidiController::OnReceiveCC() {
   #if DEBUG
@@ -50,7 +62,20 @@ void MidiController::OnResetCtrl() {
   if (State & Iridium::StateMode::ParamChange) {
     byte ParamCN = pgm_read_byte_near(Iridium::ParamTable + CN - 1);
     
-    MidiOutIf::CC(Com, Channel, ParamCN, CV);
+    // MidiOutIf::CC(Com, Channel, ParamCN, CV);
+    
+    ValueStart = ValueCurrent;
+    ValueEnd = CV;
+    
+    if (ValueStart != ValueEnd)
+    {
+      RampParameter = ParamCN;
+      IsRamping = true;
+      
+      RampDirection = (ValueCurrent < ValueEnd) ? 1 : -1;
+      
+      Clock.Reset();
+    }
     
     DPRINTLNF("ParamChange");
   }
@@ -73,4 +98,36 @@ void MidiController::OnResetCtrl() {
   
   // RESET STATE
   RST_STATE(State);
+}
+
+
+void MidiController::Invoke() {
+  if (IsRamping)
+  {    
+    if (Gate.Check(IRIDIUM_RAMP_GATE_MS))
+    {
+      unsigned long DeltaT = millis() - Clock.TimerStart;
+      float FacT = ((float)DeltaT / (float)IRIDIUM_RAMP_GRAD_MS);
+      float CV = ValueStart + FacT * (ValueEnd - ValueStart);
+      
+      ValueCurrent = CV;
+      
+      if (((RampDirection == 1) && (ValueCurrent >= ValueEnd)) || 
+         ((RampDirection == -1) && (ValueCurrent <= ValueEnd)) ||
+         (ValueCurrent < 0) || (ValueCurrent > 127))
+      {
+        ValueCurrent = ValueEnd;
+        IsRamping = false;
+      }
+      
+      if ((ValueCurrent != ValueStart) && (ValueCurrent != ValuePrev))
+      {
+        MidiOutIf::CC(Com, Channel, RampParameter, ValueCurrent);
+        ValuePrev = ValueCurrent;
+      }
+      
+      Gate.Reset();
+    }
+    
+  }
 }

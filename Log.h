@@ -20,9 +20,10 @@ void LogPC(char Direction, byte Channel, byte PN);
 
 #define DPRINT(...)     Serial.print(__VA_ARGS__)
 #define DPRINTLN(...)   Serial.println(__VA_ARGS__)
-#define DRINTF(...)     Serial.print(F(__VA_ARGS__))
+#define DPRINTF(...)    Serial.print(F(__VA_ARGS__))
 #define DPRINTLNF(...)  Serial.println(F(__VA_ARGS__))
 #define DWRITE(...)     Serial.write(__VA_ARGS__)
+#define DBEGIN(...)     Serial.begin(__VA_ARGS__)
 
 #else
 
@@ -31,6 +32,7 @@ void LogPC(char Direction, byte Channel, byte PN);
 #define DPRINTF(...)    // blank line
 #define DPRINTLNF(...)  // blank line
 #define DWRITE(...)     // blank line
+#define DBEGIN(...)     // blank line
 
 #endif
 

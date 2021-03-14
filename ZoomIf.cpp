@@ -11,6 +11,7 @@
 #include "ZoomIf.h"
 #include "ZoomMsg.h"
 
+static Timer            ZoomIf::Clock;
 static Stream           *ZoomIf::Com;
 static byte             ZoomIf::Channel;
 static bool             ZoomIf::TunerState = false;
@@ -408,7 +409,7 @@ void ZoomIf::HandleInput() {
   byte Index = 0;
   
   if (Com->available()) {
-    Timer::Reset();
+    Clock.Reset();
     
     DPRINTLNF("CurrentEffects: ");
     DPRINTLN(CurrentEffects, BIN);
@@ -417,7 +418,7 @@ void ZoomIf::HandleInput() {
       Buffer[Index] = Com->read();
       if (Buffer[Index] == 0xFF) continue;
       if ((Buffer[Index++] == 0xF7) ||
-          (Timer::Check(ZOOM_MSG_RX_TIMEOUT))) break;
+          (Clock.Check(ZOOM_MSG_RX_TIMEOUT))) break;
     }
     
     if (Index == ZOOM_PARAM_LENGTH) {         // Disable effect / Param edit
