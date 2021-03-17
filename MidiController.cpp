@@ -62,8 +62,6 @@ void MidiController::OnResetCtrl() {
   if (State & Iridium::StateMode::ParamChange) {
     byte ParamCN = pgm_read_byte_near(Iridium::ParamTable + CN - 1);
     
-    // MidiOutIf::CC(Com, Channel, ParamCN, CV);
-    
     ValueStart = ValueCurrent;
     ValueEnd = CV;
     
@@ -75,6 +73,10 @@ void MidiController::OnResetCtrl() {
       RampDirection = (ValueCurrent < ValueEnd) ? 1 : -1;
       
       Clock.Reset();
+    }
+    else
+    {
+      MidiOutIf::CC(Com, Channel, ParamCN, CV);
     }
     
     DPRINTLNF("ParamChange");
