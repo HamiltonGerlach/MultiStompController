@@ -15,6 +15,7 @@
 #define IRIDIUM_CN_ROOM         17
 #define IRIDIUM_CN_EXPRESSION   100
 
+#define IRIDIUM_PN_FORCE_PATCH  126
 #define IRIDIUM_PN_MANUAL_MODE  127
 
 #define IRIDIUM_CUSTOM_MSG_NUM  10
@@ -34,7 +35,8 @@ namespace Iridium {
         PatchChange = BIT(0),
         ParamChange = BIT(1),
         ManualMode  = BIT(2),
-        CustomMsg   = BIT(3)
+        CustomMsg   = BIT(3),
+        ForcePatch  = BIT(4)
     };
     
     typedef struct Parameters {

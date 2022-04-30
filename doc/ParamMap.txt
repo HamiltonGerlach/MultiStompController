@@ -1,0 +1,120 @@
+Effect 0
+
+Param 0 
+
+Bit     Offset  Bitnumber
+b0      9       5
+b1      9       6
+b2      5       3
+b3      10      0
+b4      10      1
+b5      10      2
+b6      10      3
+b7      10      4
+b8      10      5
+b9      10      6
+b10     5       2
+b11     11      0
+
+Param 1
+
+Bit     Offset  Bitnumber
+b0      11      2
+b1      11      3
+b2      11      4
+b3      11      5
+b4      11      6
+b5      5       1
+b6      12      0
+b7      12      1
+b8      12      2
+b9      12      3
+b10     12      4
+
+Param 2
+
+Bits    Offset  Bitnumber
+b0      5       0
+b1      14      0
+b2      14      1
+b3      14      2
+b4      14      3
+b5      14      4
+b6      14      5
+b7      14      6
+b8      13      6
+b9      15      0
+b10     15      1
+
+Param 3
+
+Bits    Offset  Bitnumber
+b0      15      4
+b1      15      5
+b2      15      6
+b3      13      5
+b4      16      0
+b5      16      1
+b6      16      2
+b7      16      3
+
+Param 4
+
+Bits    Offset  Bitnumber
+b0      16      4
+b1      16      5
+b2      16      6
+b3      13      4
+b4      17      0
+b5      17      1
+b6      17      2
+b7      17      3
+
+Param 5
+
+Bits    Offset  Bitnumber
+b0      17      4
+b1      17      5
+b2      17      6
+b3      13      3
+b4      18      0
+b5      18      1
+b6      18      2
+b7      18      3
+
+Param 6
+
+Bits    Offset  Bitnumber
+b0      18      4
+b1      18      5
+b2      18      6
+b3      13      2
+b4      19      0
+b5      19      1
+b6      19      2
+b7      19      3
+
+Param 7
+
+Bits    Offset  Bitnumber
+b0      19      4
+b1      19      5
+b2      19      6
+b3      13      1
+b4      20      0
+b5      20      1
+b6      20      2
+b7      20      3
+b8      20      4
+
+Param 8
+
+Bits    Offset  Bitnumber
+b0      24      0
+b1      24      1
+b2      24      2
+b3      24      3
+b4      24      4
+b5      24      5
+b6      24      6
+b7      21      4

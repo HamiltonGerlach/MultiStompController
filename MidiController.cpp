@@ -21,11 +21,17 @@ void MidiController::OnReceiveCC() {
     LogCC('R', Channel, CN, CV);
   #endif
   
-  if (CN == 127) {
+  if (CN == IRIDIUM_PN_MANUAL_MODE) {
     ADD_STATE(State, Iridium::StateMode::ManualMode);
   }
-  else if (CN <= IRIDIUM_CN_TBL_LEN) {
+  
+  if (CN <= IRIDIUM_CN_TBL_LEN) {
     ADD_STATE(State, Iridium::StateMode::ParamChange);
+  }
+  
+  if (CN == IRIDIUM_PN_FORCE_PATCH) {
+    ADD_STATE(State, Iridium::StateMode::ForcePatch);
+    DPRINTLNF("ForcePatch");
   }
 }
 
@@ -49,7 +55,7 @@ void MidiController::OnReceivePC() {
 
 void MidiController::OnResetCtrl() {
   if (State & Iridium::StateMode::PatchChange) {
-    if (PN != Param.Patch)
+    if ((PN != Param.Patch) || (State & Iridium::StateMode::ForcePatch))
     {
       Param.Patch = PN;
       MidiOutIf::PC(Com, Channel, PN);
@@ -57,7 +63,6 @@ void MidiController::OnResetCtrl() {
       DPRINTLNF("PatchChange");
     }
   }
-  
   
   if (State & Iridium::StateMode::ParamChange) {
     byte ParamCN = pgm_read_byte_near(Iridium::ParamTable + CN - 1);
