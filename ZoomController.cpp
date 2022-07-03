@@ -20,6 +20,9 @@ void ZoomController::OnReceiveCC() {
   else if (CN == ZOOM_CN_EFFECT_OFF) { // Toggle effects off (CV -> bitmask)
     ADD_STATE(State, Zoom::StateMode::SwitchOff);
   }
+  else {
+    ADD_STATE(State, Zoom::StateMode::ParamChange);
+  }
 }
 
 
@@ -168,6 +171,18 @@ void ZoomController::OnResetCtrl() {
       CustomMessage[CustomMsgIdx](this, PN, CN, CV);
   
     DPRINTLNF("CustomMsg");
+  }
+  
+  
+  
+  if (State & Zoom::StateMode::ParamChange) {
+    ZoomIf::ParamEdit((int)floor(CN / 10), (CN - 1) % 10, CV);
+  }
+  
+  
+  if (State & Zoom::StateMode::SetParams) {
+    // TBD
+    // Focus parameter mode, to be edited with CN=4 (tbd), CV=value
   }
   
   

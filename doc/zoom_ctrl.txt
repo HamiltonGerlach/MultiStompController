@@ -1,0 +1,34 @@
+Channel 1 Functions (ZOOM):
+
+PC	0-49		Select Patch 1 - 50
+PC	50			Reserved
+PC	51-56		Focus Effect 1-6
+PC	57-60		Reserved
+PC	61-69,		Parameter edit 1-9 (Slot = PN modulo 10)
+	71-79,
+	81-89,
+	91-99,
+	101-109,
+	111-119
+PC	70,			Custom Messages
+	80,
+	90,
+	100,
+	110,
+	120-127
+	
+
+CC 0	-			-			-	-	Reserved / Bank Change
+CC 1	0b0000000	0b00111111	-	-	Set effects 1-6 via bitmask (Bit n == Effect n)
+CC 2	0b0000000	0b00111111	-	-	Switch effects 1-6 on via bitmask
+CC 3	0b0000000	0b00111111	-	-	Switch effects 1-6 off via bitmask
+CC 4	0			127			-	-	Edit focused parameter (SetParams, selected by PN 61-119)
+CC XY 	(11 - 19, 21 - 29, etc.)		Set effect X (1-6, realistically 1-3) parameter Y (1-9)
+										CN: XY, CV: value (0 - 127)
+											- Scaled in ZoomIf to correct range of effect parameter
+					
+					
+Bit Conversion Table
+
+Bit 5	Bit 4	Bit 3	Bit 2	Bit 1	Bit 0
+	32		16		8		4		2		1
